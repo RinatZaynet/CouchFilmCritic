@@ -1,0 +1,33 @@
+#RPHead {
+    border: solid 2px;
+}
+
+#registButton img {
+    width: 150px;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+#registButton {
+    /*background-color:#FF43A4;*/
+}
+
+#signButton {
+   /* background-color:#1B5583;*/
+}
+
+.button {
+    border: none;
+    border-radius: 5px;
+    transition: all 500ms ease;
+    color: black;
+}
+
+.button:hover{
+    width: 200px;
+}
+
+#signButton img {
+    width: 150px;
+    height: auto;
+}
