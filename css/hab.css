@@ -17,10 +17,10 @@
 }
 
 .button {
-    border: none;
     border-radius: 5px;
     transition: all 500ms ease;
     color: black;
+    right: 200px;
 }
 
 .button:hover{
