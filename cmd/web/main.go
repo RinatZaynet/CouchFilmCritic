@@ -18,6 +18,7 @@ func RegPage(w http.ResponseWriter, r *http.Request) {
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseGlob("./ui/html/*"))
+	w.Header().Add("X-Content-Type-Options", "nosniff")
 	err := tmpl.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		log.Fatal(err)
