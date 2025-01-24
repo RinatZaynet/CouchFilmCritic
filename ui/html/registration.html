@@ -7,11 +7,14 @@
     <title>Registration</title>
 </head>
 <body>
-    <form action="">
-        <h3>Регистрируемся!</h3>
-        <input type="text" placeholder="Электронная почта"><br>
-        <input type="password" placeholder="Пароль"><br>
-        <input type="text" placeholder="Твой никнейм"><br>
+    <form action="" method="post">
+        <fieldset>
+            <legend>Регистрация</legend>
+            <input type="text" placeholder="Придумайте никнейм" required>
+            <input type="password" placeholder="Придумайте пароль" required>
+            <input type="password" placeholder="Повторите пароль" required>
+            <input type="submit" placeholder="Готово">
+        </fieldset>
     </form>
 </body>
 </html>
