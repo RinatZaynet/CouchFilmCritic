@@ -20,7 +20,7 @@ func (dep *dependencies) createSessCookie(w http.ResponseWriter) {
 
 	cookie := &http.Cookie{
 		Name:    "session_id",
-		Value:   JWTtoken,
+		Value:   "JWTtoken",
 		Expires: time.Now().Add(240 * time.Hour),
 	}
 	http.SetCookie(w, cookie)

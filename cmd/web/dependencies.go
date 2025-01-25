@@ -10,8 +10,8 @@ import (
 
 type dependencies struct {
 	Templates *template.Template
-	DB        *mysql.ClientDB
-	ClientJWT *jwt.ManagerJWT
+	DB        *mysql.ManagerDB
+	JWT       *jwt.ManagerJWT
 }
 
 // Внедрить конфигурацию
@@ -22,7 +22,6 @@ func initDependencies() *dependencies {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	clientJWT, err := jwt.NewClientJWT()
 	if err != nil {
@@ -31,9 +30,8 @@ func initDependencies() *dependencies {
 
 	dep := &dependencies{
 		Templates: tmpl,
-		DB:        &mysql.ClientDB{DB: db},
-		ClientJWT: clientJWT,
+		DB:        &mysql.ManagerDB{Database: db},
+		JWT:       clientJWT,
 	}
-
 	return dep
 }

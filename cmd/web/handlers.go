@@ -14,7 +14,13 @@ func (dep *dependencies) regPage(w http.ResponseWriter, r *http.Request) {
 
 func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
 	err := dep.Templates.ExecuteTemplate(w, "index.html", nil)
+	//_, err := dep.DB.InsertUser("Rinat", "rinat@mail.ru", "13r1jgfu9cxcvx6vspmz")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//user, err := dep.DB.GetUserByNickName("Rinat")
 	if err != nil {
 		log.Fatal(err)
 	}
+	//fmt.Fprintln(w, user)
 }
