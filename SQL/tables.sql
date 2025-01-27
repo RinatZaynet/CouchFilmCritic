@@ -27,6 +27,24 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE IF NOT EXISTS `reviews` (
+  `id` int NOT NULL UNIQUE AUTO_INCREMENT,
+  `work_title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `genres` varchar(31) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `work_type` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `review` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rating` float COLLATE utf8mb4_unicode_ci NOT NULL,
+  `create_date` datetime NOT NULL,
+  `author_user_id` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 /*
 CREATE TABLE `reviews` (
@@ -36,4 +54,4 @@ CREATE TABLE `reviews` (
   `created` datetime NOT NULL,
   `expires` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-*/
+*/ 

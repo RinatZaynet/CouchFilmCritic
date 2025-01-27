@@ -16,12 +16,25 @@ func (dep *dependencies) checkSessCookie(r *http.Request) bool {
 	return true
 }
 
-func (dep *dependencies) createSessCookie(w http.ResponseWriter) {
+func (dep *dependencies) createSessCookie(w *http.ResponseWriter) {
 
 	cookie := &http.Cookie{
 		Name:    "session_id",
 		Value:   "JWTtoken",
 		Expires: time.Now().Add(240 * time.Hour),
 	}
-	http.SetCookie(w, cookie)
+	http.SetCookie(*w, cookie)
+}
+
+func (dep *dependencies) deleteSessCookie(r *http.Request, w *http.ResponseWriter) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		return
+	}
+	if cookie.Expires.Before(time.Now()) {
+		return
+	}
+	cookie.Expires = time.Now().AddDate(0, 0, 1)
+
+	http.SetCookie(*w, cookie)
 }

@@ -30,7 +30,7 @@ func (manager *ManagerDB) InsertUser(nickName string, email string, passwordHash
 func (manager *ManagerDB) GetUserByNickName(nickName string) (user *models.User, err error) {
 	user = &models.User{}
 	row := manager.Database.QueryRow(sqlGetUserByNickName, nickName)
-	err = row.Scan(&user.ID, &user.NickName, &user.Email, &user.PasswordHash, &user.SignUp)
+	err = row.Scan(&user.ID, &user.NickName, &user.Email, &user.PasswordHash, &user.SignUpDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("an error occurred while get user %s in the GetUserByNickName(). Error: %w", nickName, models.ErrNoRows)

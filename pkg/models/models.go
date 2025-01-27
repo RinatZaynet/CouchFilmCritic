@@ -9,13 +9,25 @@ var (
 	ErrNoRows = errors.New("there are no rows that satisfy your request")
 )
 
+type Session struct {
+	ID string
+}
+
 type User struct {
 	ID           int
 	NickName     string
 	Email        string
 	PasswordHash string
-	SignUp       time.Time
+	SignUpDate   time.Time
 }
-type Session struct {
-	ID string
+
+type Review struct {
+	ID         int
+	WorkTitle  string
+	Genres     string
+	WorkType   string
+	Review     string
+	Rating     float64
+	CreateDate time.Time
+	UserID     int
 }
