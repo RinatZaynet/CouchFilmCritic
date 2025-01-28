@@ -23,8 +23,8 @@ type ManagerJWT struct {
 
 func (manager *ManagerJWT) GenTokenJWT(sess *models.Session) (tokenJWT string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sessionID": sess.ID,
-		"exp":       time.Now().Add(time.Hour * 240).Unix(),
+		"sub": sess.Sub,
+		"exp": time.Now().Add(time.Hour * 240).Unix(),
 	})
 
 	tokenJWT, err = token.SignedString(manager.privateKey)
@@ -35,9 +35,10 @@ func (manager *ManagerJWT) GenTokenJWT(sess *models.Session) (tokenJWT string, e
 	return tokenJWT, nil
 }
 
-func (manager *ManagerJWT) CheckTokenJWT(tokenString string) error {
+func (manager *ManagerJWT) CheckTokenJWT(tokenString string) (sub string, err error) {
+	sub = ""
 	if tokenString == "" {
-		return ErrTokenNotFound
+		return sub, ErrTokenNotFound
 	}
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -47,18 +48,21 @@ func (manager *ManagerJWT) CheckTokenJWT(tokenString string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("an error occurred while parsing the token in CheckTokenJWT. Error: %w", err)
+		return sub, fmt.Errorf("an error occurred while parsing the token in CheckTokenJWT. Error: %w", err)
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if exp, ok := claims["exp"].(float64); ok {
 			if time.Unix(int64(exp), 0).Before(time.Now()) {
-				return ErrTokenExpired
+				return sub, ErrTokenExpired
 			}
-			return nil
+			if sub, ok = claims["sub"].(string); ok {
+				return sub, nil
+			}
+			return sub, ErrTokenIsInvalid
 		}
 	}
-	return ErrTokenIsInvalid
+	return sub, ErrTokenIsInvalid
 }
 func NewClientJWT() (client *ManagerJWT, err error) {
 	// Реализовать получаение названия переменной из конф. файла

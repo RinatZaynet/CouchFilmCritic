@@ -10,7 +10,7 @@ var (
 )
 
 type Session struct {
-	ID string
+	Sub string
 }
 
 type User struct {
