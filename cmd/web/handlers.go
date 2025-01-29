@@ -4,15 +4,47 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+
+	"github.com/RinatZaynet/CouchFilmCritic/pkg/models"
 )
 
 func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
-	/*err := dep.Templates.ExecuteTemplate(w, "index.html", nil)
+	reviews, err := dep.DB.GetReviewsByAuthor("Rinat")
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+		return
+	}
+	// локация должна соответствовать локации пользователя
+	err = formatTimeReviews(reviews, "Europe/Moscow")
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+		return
+	}
+	err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*models.Review }{reviews})
+	if err != nil {
+		fmt.Println(err)
+	}
+	/*reviews, err := dep.DB.GetLatestReviews()
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+		return
+	}
+	// локация должна соответствовать локации пользователя
+	err = formatTimeReviews(reviews, "Europe/Moscow")
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+		return
+	}
+	err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*models.Review }{reviews})
+	if err != nil {
+		fmt.Println(err)
+	}*/
+
+	/*err := dep.Templates.ExecuteTemplate(w, "main.html", nil)
 	if err != nil {
 		log.Fatal(err)
 	}*/
-	sub, err := dep.checkSessCookie(r)
+	/*sub, err := dep.checkSessCookie(r)
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		return
@@ -27,7 +59,8 @@ func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
-	fmt.Fprintln(w, user.ID, user.NickName, user.Email, user.PasswordHash, user.SignUpDate.In(loc))
+	fmt.Fprintln(w, user.ID, user.NickName, user.Email, user.PasswordHash, user.SignUpDate.In(loc))*/
+
 	/*_, err := dep.DB.InsertUser("Rinat", "rinat@mail.ru", "13r1jgfu9cxcvx6vspmz")
 	if err != nil {
 		log.Fatal(err)
@@ -101,6 +134,5 @@ func (dep *dependencies) createUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
-	fmt.Println("Cookie successfully created")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

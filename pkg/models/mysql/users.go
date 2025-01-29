@@ -19,7 +19,7 @@ var (
 	WHERE email = ?`
 )
 
-func (manager *ManagerDB) InsertUser(nickName string, email string, passwordHash string) (userID int, err error) {
+func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (userID int, err error) {
 	result, err := manager.Database.Exec(sqlInsertUser, nickName, email, passwordHash)
 	if err != nil {
 		// не отдавать err, написать свою ошибку
@@ -34,8 +34,8 @@ func (manager *ManagerDB) InsertUser(nickName string, email string, passwordHash
 }
 
 func (manager *ManagerDB) GetUserByNickName(nickName string) (user *models.User, err error) {
-	user = &models.User{}
 	row := manager.Database.QueryRow(sqlGetUserByNickName, nickName)
+	user = &models.User{}
 	err = row.Scan(&user.ID, &user.NickName, &user.Email, &user.PasswordHash, &user.SignUpDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

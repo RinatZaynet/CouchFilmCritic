@@ -29,7 +29,7 @@ func (manager *ManagerJWT) GenTokenJWT(sess *models.Session) (tokenJWT string, e
 
 	tokenJWT, err = token.SignedString(manager.privateKey)
 	if err != nil {
-		return "", fmt.Errorf("an error occurred while signing the token in GenTokenJWT. Error: %w", err)
+		return "", fmt.Errorf("an error occurred while signing the token in GenTokenJWT(). Error: %w", err)
 	}
 
 	return tokenJWT, nil
@@ -48,7 +48,7 @@ func (manager *ManagerJWT) CheckTokenJWT(tokenString string) (sub string, err er
 	})
 
 	if err != nil {
-		return sub, fmt.Errorf("an error occurred while parsing the token in CheckTokenJWT. Error: %w", err)
+		return sub, fmt.Errorf("an error occurred while parsing the token in CheckTokenJWT(). Error: %w", err)
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {

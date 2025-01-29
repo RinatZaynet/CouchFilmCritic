@@ -22,12 +22,13 @@ type User struct {
 }
 
 type Review struct {
-	ID         int
-	WorkTitle  string
-	Genres     string
-	WorkType   string
-	Review     string
-	Rating     float64
-	CreateDate time.Time
-	UserID     int
+	ID               int
+	WorkTitle        string
+	Genres           string
+	WorkType         string
+	Review           string
+	Rating           float64
+	CreateDate       time.Time
+	FormatCreateDate string
+	Author           string
 }
