@@ -19,7 +19,8 @@ var (
 	WHERE email = ?`
 )
 
-func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (userID int, err error) {
+func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (int, error) {
+	const fn = "storage.mysql.managerDB.InsertUser()"
 	result, err := manager.Database.Exec(sqlInsertUser, nickName, email, passwordHash)
 	if err != nil {
 		// не отдавать err, написать свою ошибку

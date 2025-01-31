@@ -1,4 +1,4 @@
-package main
+package sesscookie
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-package main
+package timefmt
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ var (
 	ErrLocationIsInvalid = errors.New("location is invalid")
 )
 
-func formatTimeReviews(reviews []*models.Review, location string) (err error) {
+func fmtTimeReviews(reviews []*models.Review, location string) (err error) {
 	if reviews == nil {
 		return fmt.Errorf("an error occurred in convertReviewsTimeZone(). Error: %w. Witch value: %#v", ErrReviewsIsInvalid, reviews)
 	}

@@ -1,0 +1,7 @@
+environment: "local" # local, dev, prod
+templates_path: "./ui/html/"
+dsn: "root@tcp(localhost:3306)/couch_film_critic_db?&charset=utf8&interpolateParams=true&parseTime=true"
+http_server:
+  address: "127.0.0.1:8081"
+  timeout: 3s
+  idle_timeout: 60s

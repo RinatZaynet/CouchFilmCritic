@@ -1,4 +1,4 @@
-package models
+package storage
 
 import (
 	"errors"
@@ -8,10 +8,6 @@ import (
 var (
 	ErrNoRows = errors.New("there are no rows that satisfy your request")
 )
-
-type Session struct {
-	Sub string
-}
 
 type User struct {
 	ID           int

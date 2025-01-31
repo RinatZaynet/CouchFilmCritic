@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/RinatZaynet/CouchFilmCritic/pkg/models"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -21,10 +21,10 @@ type ManagerJWT struct {
 	privateKey []byte
 }
 
-func (manager *ManagerJWT) GenTokenJWT(sess *models.Session) (tokenJWT string, err error) {
+func (manager *ManagerJWT) GenTokenJWT(claims *auth.Claims) (tokenJWT string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": sess.Sub,
-		"exp": time.Now().Add(time.Hour * 240).Unix(),
+		"sub": claims.Sub,
+		"exp": claims.Exp,
 	})
 
 	tokenJWT, err = token.SignedString(manager.privateKey)
