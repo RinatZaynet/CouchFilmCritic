@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ErrNoRows = errors.New("there are no rows that satisfy your request")
+	ErrNoRows        = errors.New("no rows found")
+	ErrDuplicateData = errors.New("duplicate data")
 )
 
 type User struct {

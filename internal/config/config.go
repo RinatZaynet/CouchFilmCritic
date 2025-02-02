@@ -12,6 +12,7 @@ type Config struct {
 	Env           string `yaml:"environment" env-required:"true"`
 	TemplatesPath string `yaml:"templates_path" env-required:"true"`
 	Dsn           string `yaml:"dsn" env-required:"true"`
+	JWTSecret     string `yaml:"jwt_secret" env-required:"true"`
 	HTTPServer    `yaml:"http_server"`
 }
 

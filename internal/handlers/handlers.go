@@ -1,54 +1,65 @@
-package helpers
+package handlers
 
 import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
-	"github.com/RinatZaynet/CouchFilmCritic/pkg/models"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 )
 
-func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
-	reviews, err := dep.DB.GetReviewsByAuthor("Rinat")
+func (dep *Dependencies) index(w http.ResponseWriter, r *http.Request) {
+	/*reviews, err := dep.DB.GetReviewsByAuthor("Rinat")
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
 	// локация должна соответствовать локации пользователя
-	err = formatTimeReviews(reviews, "Europe/Moscow")
+	err = timefmt.TimeReviewsFmt(reviews, "Europe/Moscow")
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
-	err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*models.Review }{reviews})
-	if err != nil {
-		fmt.Println(err)
-	}
-	/*reviews, err := dep.DB.GetLatestReviews()
-	if err != nil {
-		fmt.Fprintf(w, "%s", err)
-		return
-	}
-	// локация должна соответствовать локации пользователя
-	err = formatTimeReviews(reviews, "Europe/Moscow")
-	if err != nil {
-		fmt.Fprintf(w, "%s", err)
-		return
-	}
-	err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*models.Review }{reviews})
+	err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*storage.Review }{reviews})
 	if err != nil {
 		fmt.Println(err)
 	}*/
+	/*
+		reviews, err := dep.DB.GetLatestReviews()
+		if err != nil {
+			fmt.Fprintf(w, "%s", err)
+			return
+		}
+		// локация должна соответствовать локации пользователя
+		err = formatTimeReviews(reviews, "Europe/Moscow")
+		if err != nil {
+			fmt.Fprintf(w, "%s", err)
+			return
+		}
+		err = dep.Templates.ExecuteTemplate(w, "main.html", struct{ Reviews []*models.Review }{reviews})
+		if err != nil {
+			fmt.Println(err)
+		}*/
 
 	/*err := dep.Templates.ExecuteTemplate(w, "main.html", nil)
 	if err != nil {
 		log.Fatal(err)
 	}*/
-	/*sub, err := dep.checkSessCookie(r)
+	token, err := sesscookie.CheckCookie(r)
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
+
+	sub, err := dep.JWT.CheckJWT(token)
+
+	if err != nil {
+		fmt.Fprintf(w, "%s", err)
+		return
+	}
+
 	user, err := dep.DB.GetUserByNickName(sub)
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
@@ -59,7 +70,7 @@ func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
-	fmt.Fprintln(w, user.ID, user.NickName, user.Email, user.PasswordHash, user.SignUpDate.In(loc))*/
+	fmt.Fprintln(w, user.ID, user.NickName, user.Email, user.PasswordHash, user.SignUpDate.In(loc))
 
 	/*_, err := dep.DB.InsertUser("Rinat", "rinat@mail.ru", "13r1jgfu9cxcvx6vspmz")
 	if err != nil {
@@ -69,25 +80,25 @@ func (dep *dependencies) mainPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Fprintln(w, user) */
-	//dep.deleteSessCookie(r, &w)
+	fmt.Fprintln(w, user)
+	//dep.deleteSessCookie(r, &w)*/
 }
 
-func (dep *dependencies) loginPage(w http.ResponseWriter, r *http.Request) {
+func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 	err := dep.Templates.ExecuteTemplate(w, "login.html", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (dep *dependencies) regPage(w http.ResponseWriter, r *http.Request) {
+func (dep *Dependencies) reg(w http.ResponseWriter, r *http.Request) {
 	err := dep.Templates.ExecuteTemplate(w, "registration.html", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (dep *dependencies) createUser(w http.ResponseWriter, r *http.Request) {
+func (dep *Dependencies) createUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "Http method %s is incorrect, use method %s. Status: %d.", r.Method, http.MethodPost, http.StatusMethodNotAllowed)
@@ -129,10 +140,19 @@ func (dep *dependencies) createUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
-	err = dep.createSessCookie(&w, nickName)
+
+	claims := &auth.Claims{
+		Sub: nickName,
+		Exp: time.Now().Add(240 * time.Hour).Unix(),
+	}
+
+	token, err := dep.JWT.GenJWT(claims)
+
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
 		return
 	}
+
+	sesscookie.CreateCookie(&w, token)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

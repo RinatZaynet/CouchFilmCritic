@@ -1,22 +1,16 @@
 package app
 
 import (
-	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/config"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/handlers"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
-
-type dependencies struct {
-	Templates *template.Template
-	DB        *mysql.ManagerDB
-	JWT       *jwt.ManagerJWT
-}
 
 func Run() {
 	cfg := config.MustConfigParsing()
@@ -38,20 +32,20 @@ func Run() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	clientJWT, err := jwt.NewClientJWT()
+	clientJWT, err := jwt.NewClientJWT(cfg.JWTSecret)
 
 	if err != nil {
 		log.Error("failed to init jwt", errslog.Err(err))
 		os.Exit(1)
 	}
 
-	dep := &dependencies{
+	dep := &handlers.Dependencies{
 		Templates: tmpl,
 		DB:        &mysql.ManagerDB{Database: db},
 		JWT:       clientJWT,
 	}
 
-	mux := dep.routing()
+	mux := handlers.Routing(dep)
 
 	server := &http.Server{
 		Addr:         cfg.Address,
@@ -61,6 +55,7 @@ func Run() {
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 	// доделать
+	log.Info("server start", slog.String("addr", cfg.Address))
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Error("failed to start server", errslog.Err(err))
