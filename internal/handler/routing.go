@@ -1,10 +1,11 @@
-package handlers
+package handler
 
 import (
 	"html/template"
 	"net/http"
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/middleware/authmiddleware"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
 
@@ -20,5 +21,8 @@ func Routing(dep *Dependencies) *http.ServeMux {
 	mux.HandleFunc("/login", dep.login)
 	mux.HandleFunc("/reg", dep.reg)
 	mux.HandleFunc("/create/user", dep.createUser)
-	return mux
+	mux.HandleFunc("/profile", dep.profile)
+	authMux := http.NewServeMux()
+	authMux.Handle("/", authmiddleware.AuthMid(mux))
+	return authMux
 }

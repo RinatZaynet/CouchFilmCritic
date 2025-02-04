@@ -35,6 +35,7 @@ func (manager *ManagerJWT) CheckJWT(tokenString string) (sub string, err error) 
 	if tokenString == "" {
 		return sub, auth.ErrTokenNotFound
 	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("%s: invalid signature method: %v", fn, token.Header["alg"])
@@ -54,22 +55,22 @@ func (manager *ManagerJWT) CheckJWT(tokenString string) (sub string, err error) 
 			return sub, nil
 		}
 
-		return sub, auth.ErrInvalidKey
+		return sub, auth.ErrInvalidToken
 	}
 
-	return sub, auth.ErrInvalidKey
+	return sub, auth.ErrInvalidToken
 }
 
 func NewClientJWT(keyPath string) (*ManagerJWT, error) {
 	const fn = "auth.jwt.NewClientJWT"
 
 	if keyPath == "" {
-		return nil, fmt.Errorf("%s: %w", fn, auth.ErrKeyNotFound)
+		return nil, fmt.Errorf("%s: %w", fn, fmt.Errorf("jwt key length cannot be 0"))
 	}
 
 	key := []byte(os.Getenv(keyPath))
 	if len(key) == 0 {
-		return nil, fmt.Errorf("%s: %w", fn, auth.ErrInvalidKey)
+		return nil, fmt.Errorf("%s: %w", fn, fmt.Errorf("invalid jwt key"))
 	}
 
 	return &ManagerJWT{privateKey: key}, nil

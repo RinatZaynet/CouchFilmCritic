@@ -7,7 +7,7 @@ import (
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/config"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/handlers"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/handler"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
@@ -39,13 +39,13 @@ func Run() {
 		os.Exit(1)
 	}
 
-	dep := &handlers.Dependencies{
+	dep := &handler.Dependencies{
 		Templates: tmpl,
 		DB:        &mysql.ManagerDB{Database: db},
 		JWT:       clientJWT,
 	}
 
-	mux := handlers.Routing(dep)
+	mux := handler.Routing(dep)
 
 	server := &http.Server{
 		Addr:         cfg.Address,
