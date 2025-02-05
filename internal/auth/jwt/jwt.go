@@ -61,8 +61,8 @@ func (manager *ManagerJWT) CheckJWT(tokenString string) (sub string, err error) 
 	return sub, auth.ErrInvalidToken
 }
 
-func NewClientJWT(keyPath string) (*ManagerJWT, error) {
-	const fn = "auth.jwt.NewClientJWT"
+func NewManagerJWT(keyPath string) (*ManagerJWT, error) {
+	const fn = "auth.jwt.NewManagerJWT"
 
 	if keyPath == "" {
 		return nil, fmt.Errorf("%s: %w", fn, fmt.Errorf("jwt key length cannot be 0"))

@@ -29,10 +29,14 @@ func CreateCookie(w *http.ResponseWriter, token string) {
 }
 
 func DeleteCookie(r *http.Request, w *http.ResponseWriter) {
-	cookie, err := r.Cookie("jwt_token")
+	_, err := r.Cookie("jwt_token")
 	if err != nil {
 		return
 	}
-	cookie.Expires = time.Now().AddDate(0, 0, -1)
+	cookie := &http.Cookie{
+		Name:   "jwt_token",
+		Path:   "/",
+		MaxAge: -1,
+	}
 	http.SetCookie(*w, cookie)
 }

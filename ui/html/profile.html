@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Профиль</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+    <div class="d-flex justify-content-end mb-3" id="auth-buttons">
+        <a href="/" id="index-btn" class="btn btn-primary mr-2">Главная страница</a>
+        <a href="/logout" method="post" id="logout-btn" class="btn btn-secondary">Выйти из профиля</a>
+    </div>
     <div class="container">
         <h1>Рецензии:</h1>
         <table class="table" style="width: 1300px;">
