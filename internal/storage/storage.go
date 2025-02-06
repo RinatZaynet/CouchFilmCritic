@@ -24,7 +24,7 @@ type Review struct {
 	Genres           string
 	WorkType         string
 	Review           string
-	Rating           float64
+	Rating           int
 	CreateDate       time.Time
 	FormatCreateDate string
 	Author           string

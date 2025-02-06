@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание рецензии</title>
+</head>
+<body>
+    <form action="/create/review" method="post">
+        <fieldset>
+            <legend>Создание рецензии</legend>
+            <input name="work_title" type="text" placeholder="Название фильма" required>
+            <input name="genres" type="text" placeholder="Жанр, пример: хоррор/триллер/боевик" required>
+            <input name="work_type" type="text" placeholder="Тип, пример: Фильм, Сериал, Аниме, Мультфильм" required>
+            <input name="review" type="text" placeholder="Отзыв" required>
+            <input name="rating" type="text" placeholder="Оценка, от 1 до 10" required>
+            <input type="submit" placeholder="Создать рецензию">
+        </fieldset>
+    </form>
+</body>
+</html>

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   `genres` varchar(31) COLLATE utf8mb4_unicode_ci NOT NULL,
   `work_type` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
   `review` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `rating` float COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rating` int COLLATE utf8mb4_unicode_ci NOT NULL,
   `create_date` datetime NOT NULL,
   `author_user_id` int NOT NULL,
   PRIMARY KEY (`id`)

@@ -1,33 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
 <body>
     <div class="d-flex justify-content-end mb-3" id="auth-buttons">
+        <a href="/create/review" id="create-btn" class="btn btn-primary mr-2">Написать рецензию</a>
         <a href="/" id="index-btn" class="btn btn-primary mr-2">Главная страница</a>
-        <a href="/logout" method="post" id="logout-btn" class="btn btn-secondary">Выйти из профиля</a>
+        <a href="/logout" id="logout-btn" class="btn btn-secondary">Выйти из профиля</a>
     </div>
-    <div class="container">
-        <h1>Рецензии:</h1>
-        <table class="table" style="width: 1300px;">
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Ваши рецензии:</h1>
+        <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th style="width:40px;"> Фильм </th>
-                    <th style="width:20px;"> Жанр </th>
-                    <th style="width:20px;"> Тип </th>
-                    <th style="width:300px;"> Отзыв </th>
-                    <th style="width:10px;"> Оценка </th>
-                    <th style="width:70px;"> Дата </th>
-                    <th style="width:20px;"> Автор </th>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Жанры</th>
+                    <th>Тип</th>
+                    <th>Отзыв</th>
+                    <th>Рейтинг</th>
+                    <th>Дата создания</th>
+                    <th>Автор</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
                 {{range .Reviews}}
                 <tr>
+                    <td>{{.ID }}</td>
                     <td>{{.WorkTitle }}</td>
                     <td>{{.Genres }}</td>
                     <td>{{.WorkType }}</td>
@@ -35,10 +41,44 @@
                     <td>{{.Rating }}</td>
                     <td>{{.FormatCreateDate }}</td>
                     <td>{{.Author }}</td>
+                    <td>
+                        <button class="btn btn-warning do-edit" data-id="{{.ID }}">Изменить</button>
+                        <button class="btn btn-danger do-delete" data-id="{{.ID }}">Удалить</button>
+                    </td>
                 </tr>
                 {{end}}
             </tbody>
         </table>
     </div>
+
+    <script>
+        $(document).ready(function() {
+    $('.do-edit').click(function() {
+        var id = $(this).data("id");
+        alert("Изменить элемент с ID: " + id);
+        // Здесь можно добавить логику для открытия модального окна с формой редактирования
+    });
+
+    $('.do-delete').click(function() {
+        if (!confirm("Вы уверены, что хотите удалить?")) {
+            return;
+        }
+        var $elem = $(this);
+        var reviewId = $elem.data("id"); // Получаем ID рецензии
+
+        $.ajax({
+            url: '/delete/review/?id=' + reviewId,
+            type: 'DELETE',
+            success: function(resp) {
+                window.location.href = '/profile';
+            },
+            error: function(err) {
+                console.error("Ошибка:", err);
+                alert("Произошла ошибка при удалении рецензии.");
+            }
+        });
+    });
+});
+    </script>
 </body>
 </html>

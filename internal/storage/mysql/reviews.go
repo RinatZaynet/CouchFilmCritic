@@ -37,14 +37,18 @@ var (
 	JOIN users u ON r.author_user_id = u.id 
 	WHERE u.nick_name = ? 
 	ORDER BY r.create_date DESC;`
+
+	sqlDeleteReviewByID = ` DELETE
+	FROM reviews
+	WHERE id = ?;`
 )
 
-func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review string, rating float64, authorUserID int) (reviewID int, err error) {
+func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review string, rating int, authorUserID int) (reviewID int, err error) {
 	const fn = "storage.mysql.managerDB.InsertReview"
 	result, err := manager.Database.Exec(sqlInsertReview, workTitle, genres, workType, review, rating, authorUserID)
 	if err != nil {
 		// if err == duplicate ...
-		return 0, fmt.Errorf("%s: %w")
+		return 0, fmt.Errorf("%s: %w", fn, err)
 	}
 
 	id, err := result.LastInsertId()
@@ -112,4 +116,19 @@ func (manager *ManagerDB) GetReviewsByAuthor(author string) ([]*storage.Review, 
 	}
 
 	return reviews, nil
+}
+
+func (manager *ManagerDB) DeleteReviewByID(reviewID int) error {
+	const fn = "storage.mysql.managerDB.DeleteReviewByID"
+
+	_, err := manager.Database.Exec(sqlDeleteReviewByID, reviewID)
+	if err != nil {
+		if err == storage.ErrNoRows {
+			return nil
+		}
+
+		return fmt.Errorf("%s: %w", fn, err)
+	}
+
+	return nil
 }

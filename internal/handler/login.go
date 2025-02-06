@@ -31,7 +31,7 @@ func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 		}
 		if unique {
 			// переписать на алерт
-			fmt.Fprintf(w, "%s", err)
+			http.Redirect(w, r, "/reg", http.StatusSeeOther)
 			return
 		}
 		user, err := dep.DB.GetUserByNickName(nickName)
@@ -61,6 +61,7 @@ func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 
 		sesscookie.CreateCookie(&w, token)
 
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)

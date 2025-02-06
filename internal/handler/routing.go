@@ -25,6 +25,9 @@ func Routing(dep *Dependencies) *http.ServeMux {
 	mux.HandleFunc("/create/user", dep.createUser)
 	mux.HandleFunc("/profile", dep.profile)
 	mux.HandleFunc("/logout", dep.logout)
+	mux.HandleFunc("/create/review", dep.createReview)
+	mux.HandleFunc("/delete/review/", dep.deleteReview)
+
 	authMux := http.NewServeMux()
 	authMux.Handle("/", authmiddleware.AuthMid(mux))
 	return authMux
