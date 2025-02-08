@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (dep *Dependencies) createUser(w http.ResponseWriter, r *http.Request) {
+func (dep *Dependencies) userSubmit(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return

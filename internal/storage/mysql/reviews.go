@@ -38,7 +38,16 @@ var (
 	WHERE u.nick_name = ? 
 	ORDER BY r.create_date DESC;`
 
-	sqlDeleteReviewByID = ` DELETE
+	sqlDeleteReviewByID = `DELETE
+	FROM reviews
+	WHERE id = ?;`
+
+	sqlGetReviewByID = `SELECT
+	work_title,
+	genres,
+	work_type,
+	review,
+	rating
 	FROM reviews
 	WHERE id = ?;`
 )
@@ -131,4 +140,22 @@ func (manager *ManagerDB) DeleteReviewByID(reviewID int) error {
 	}
 
 	return nil
+}
+
+func (manager *ManagerDB) GetReviewByID(id int) (*storage.Review, error) {
+	const fn = "storage.mysql.managerDB.GetReviewByID"
+
+	row := manager.Database.QueryRow(sqlGetReviewByID, id)
+
+	review := &storage.Review{}
+	err := row.Scan(&review.WorkTitle, &review.Genres, review.WorkType, &review.Review, &review.Rating)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
+		}
+
+		return nil, fmt.Errorf("%s: %w", fn, err)
+	}
+
+	return review, nil
 }

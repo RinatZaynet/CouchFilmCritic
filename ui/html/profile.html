@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="d-flex justify-content-end mb-3" id="auth-buttons">
-        <a href="/create/review" id="create-btn" class="btn btn-primary mr-2">Написать рецензию</a>
+        <a href="/review/create" id="create-btn" class="btn btn-primary mr-2">Написать рецензию</a>
         <a href="/" id="index-btn" class="btn btn-primary mr-2">Главная страница</a>
         <a href="/logout" id="logout-btn" class="btn btn-secondary">Выйти из профиля</a>
     </div>
@@ -54,9 +54,19 @@
     <script>
         $(document).ready(function() {
     $('.do-edit').click(function() {
-        var id = $(this).data("id");
-        alert("Изменить элемент с ID: " + id);
-        // Здесь можно добавить логику для открытия модального окна с формой редактирования
+        if (!confirm("Вы уверены, что хотите изменить рецензию?")) {
+            return;
+        }
+        var $elem = $(this);
+        var reviewId = $elem.data("id"); // Получаем ID рецензии
+        $.ajax({
+            url: '/review/update/?id=' + reviewId,
+            type: 'GET',
+            error: function(err) {
+                console.error("Ошибка:", err);
+                alert("Произошла ошибка при изменении рецензии.");
+            }
+        });
     });
 
     $('.do-delete').click(function() {
@@ -67,7 +77,7 @@
         var reviewId = $elem.data("id"); // Получаем ID рецензии
 
         $.ajax({
-            url: '/delete/review/?id=' + reviewId,
+            url: '/review/delete/?id=' + reviewId,
             type: 'DELETE',
             success: function(resp) {
                 window.location.href = '/profile';

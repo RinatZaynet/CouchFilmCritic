@@ -28,15 +28,15 @@ func (manager *ManagerJWT) GenJWT(claims *auth.Claims) (tokenJWT string, err err
 	return tokenJWT, nil
 }
 
-func (manager *ManagerJWT) CheckJWT(tokenString string) (sub string, err error) {
+func (manager *ManagerJWT) CheckJWT(token string) (sub string, err error) {
 	const fn = "auth.jwt.CheckJWT"
 	sub = ""
 
-	if tokenString == "" {
+	if token == "" {
 		return sub, auth.ErrTokenNotFound
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("%s: invalid signature method: %v", fn, token.Header["alg"])
 		}
@@ -50,7 +50,7 @@ func (manager *ManagerJWT) CheckJWT(tokenString string) (sub string, err error) 
 		return sub, fmt.Errorf("%s: %w", fn, err)
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
 		if sub, ok = claims["sub"].(string); ok {
 			return sub, nil
 		}

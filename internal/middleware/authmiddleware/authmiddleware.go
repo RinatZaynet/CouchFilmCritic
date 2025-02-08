@@ -19,6 +19,7 @@ func AuthMid(h http.Handler) http.Handler {
 			h.ServeHTTP(w, r)
 			return
 		}
+
 		token, err := sesscookie.CheckCookie(r)
 		if err != nil {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -26,7 +27,6 @@ func AuthMid(h http.Handler) http.Handler {
 		if tParts := strings.Split(token, "."); len(tParts) != 3 {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
-
 		h.ServeHTTP(w, r)
 	})
 }
