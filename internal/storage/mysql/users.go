@@ -21,6 +21,7 @@ var (
 
 func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (int, error) {
 	const fn = "storage.mysql.managerDB.InsertUser"
+
 	result, err := manager.Database.Exec(sqlInsertUser, nickName, email, passwordHash)
 	if err != nil {
 		// if err == duplicate ...
@@ -36,6 +37,7 @@ func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (int,
 
 func (manager *ManagerDB) GetUserByNickName(nickName string) (*storage.User, error) {
 	const fn = "storage.mysql.managerDB.GetUserByNickName"
+
 	row := manager.Database.QueryRow(sqlGetUserByNickName, nickName)
 
 	user := &storage.User{}
@@ -54,6 +56,7 @@ func (manager *ManagerDB) GetUserByNickName(nickName string) (*storage.User, err
 func (manager *ManagerDB) IsNickNameUnique(nickName string) (unique bool, err error) {
 	const fn = "storage.mysql.managerDB.IsNickNameUnique"
 	user := &storage.User{}
+
 	row := manager.Database.QueryRow(sqlIsNickNameUnique, nickName)
 
 	err = row.Scan(&user.NickName)
@@ -71,6 +74,7 @@ func (manager *ManagerDB) IsNickNameUnique(nickName string) (unique bool, err er
 func (manager *ManagerDB) IsEmailUnique(email string) (unique bool, err error) {
 	const fn = "storage.mysql.managerDB.IsEmailUnique"
 	user := &storage.User{}
+
 	row := manager.Database.QueryRow(sqlIsEmailUnique, email)
 
 	err = row.Scan(&user.Email)

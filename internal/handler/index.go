@@ -1,28 +1,55 @@
 package handler
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
+	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/timefmt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage"
 )
 
 func (dep *Dependencies) index(w http.ResponseWriter, r *http.Request) {
-	reviews, err := dep.DB.GetLatestReviews()
-	if err != nil {
-		fmt.Fprintf(w, "%s", err)
-		return
-	}
-	// локация должна соответствовать локации пользователя
-	err = timefmt.TimeReviewsFmt(reviews, "Europe/Moscow")
-	if err != nil {
-		fmt.Fprintf(w, "%s", err)
+	const fn = "handler.index"
+	const tmplIndex = "index.html"
+
+	logger := dep.Slogger.With(slog.String("func", fn))
+
+	logger.Info("start of the handler work")
+
+	if r.Method != http.MethodGet {
+		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+
 		return
 	}
 
-	err = dep.Templates.ExecuteTemplate(w, "index.html", struct{ Reviews []*storage.Review }{reviews})
+	reviews, err := dep.DB.GetLatestReviews()
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("failed to get latest reviews", errslog.Err(err))
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		return
 	}
+
+	// локация должна соответствовать локации пользователя
+	if err := timefmt.TimeReviewsFmt(reviews, "Europe/Moscow"); err != nil {
+		logger.Error("failed to format time", errslog.Err(err))
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		return
+	}
+
+	if err := dep.Templates.ExecuteTemplate(w, tmplIndex, struct{ Reviews []*storage.Review }{reviews}); err != nil {
+		logger.Error("failed to execute template", slog.String("tmpl", tmplIndex), errslog.Err(err))
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		return
+	}
+
+	logger.Info("successful of the handler work, execute template", slog.String("tmpl", tmplIndex))
 }

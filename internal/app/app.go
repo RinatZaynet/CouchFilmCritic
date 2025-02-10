@@ -27,6 +27,7 @@ func Run() {
 		log.Error("failed to parse templates", errslog.Err(err))
 		os.Exit(1)
 	}
+
 	db, err := mysql.OpenDB(cfg.Dsn)
 	if err != nil {
 		log.Error("failed to connect to mysql database", errslog.Err(err))
@@ -35,19 +36,23 @@ func Run() {
 	defer db.Close()
 
 	managerJWT, err := jwt.NewManagerJWT(cfg.JWTSecret)
-
 	if err != nil {
 		log.Error("failed to init jwt", errslog.Err(err))
 		os.Exit(1)
 	}
 
-	managerArgon2 := argon2.NewManagerArgon2(&argon2.Options{cfg.Time, cfg.Memory, cfg.Threads})
+	managerArgon2 := argon2.NewManagerArgon2(&argon2.Options{
+		Time:    cfg.Time,
+		Memory:  cfg.Memory,
+		Threads: cfg.Threads,
+	})
 
 	dep := &handler.Dependencies{
 		Templates: tmpl,
 		DB:        &mysql.ManagerDB{Database: db},
 		JWT:       managerJWT,
 		A2:        managerArgon2,
+		Slogger:   log,
 	}
 
 	mux := handler.Routing(dep)

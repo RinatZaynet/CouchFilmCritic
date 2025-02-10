@@ -1,68 +1,44 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
-	"time"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
-	hashpass "github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 )
 
 func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := dep.Templates.ExecuteTemplate(w, "login.html", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
+	const fn = "handler.login"
+	const tmplLogin = "login.html"
+
+	logger := dep.Slogger.With(slog.String("func", fn))
+
+	logger.Info("start of the handler work")
+
+	if r.Method != http.MethodGet {
+		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
-	if r.Method == http.MethodPost {
-		nickName := r.FormValue("nickname")
 
-		unique, err := dep.DB.IsNickNameUnique(nickName)
-		if err != nil {
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-		if unique {
-			// переписать на алерт
-			http.Redirect(w, r, "/reg", http.StatusSeeOther)
-			return
-		}
-		user, err := dep.DB.GetUserByNickName(nickName)
-		if err != nil {
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-		err = dep.A2.CompareHashAndPassword([]byte(r.FormValue("password")), user.PasswordHash)
-		if err != nil {
-			if errors.Is(err, hashpass.ErrMismatchesTypes) {
-				// переписать на алерт
-				fmt.Fprintf(w, "%s", err)
-				return
-			}
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-
-		claims := &auth.Claims{
-			Sub: nickName,
-			Exp: time.Now().Add(240 * time.Hour).Unix()}
-		token, err := dep.JWT.GenJWT(claims)
-		if err != nil {
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-
-		sesscookie.CreateCookie(&w, token)
+	if _, err := sesscookie.CheckCookie(r); err == nil {
+		logger.Warn("login attempt with existing session cookie. redirecting to index page", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+
+		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	if err := dep.Templates.ExecuteTemplate(w, tmplLogin, nil); err != nil {
+		logger.Error("failed to execute template", slog.String("tmpl", tmplLogin), errslog.Err(err))
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		return
+	}
+
+	logger.Info("successful of the handler work, execute template", slog.String("tmpl", tmplLogin))
 }

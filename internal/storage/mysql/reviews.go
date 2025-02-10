@@ -11,6 +11,7 @@ import (
 var (
 	sqlInsertReview = `INSERT INTO reviews (work_title, genres, work_type, review, rating, create_date, author_user_id)
 	VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)`
+
 	sqlGetLatestReviews = `SELECT 
     r.id AS review_id,
     r.work_title,
@@ -73,7 +74,7 @@ func (manager *ManagerDB) GetLatestReviews() ([]*storage.Review, error) {
 	rows, err := manager.Database.Query(sqlGetLatestReviews)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrNoRows
+			return nil, nil
 		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)
@@ -103,7 +104,7 @@ func (manager *ManagerDB) GetReviewsByAuthor(author string) ([]*storage.Review, 
 	rows, err := manager.Database.Query(sqlGetReviewsByAuthor, author)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrNoRows
+			return nil, nil
 		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)
@@ -132,7 +133,7 @@ func (manager *ManagerDB) DeleteReviewByID(reviewID int) error {
 
 	_, err := manager.Database.Exec(sqlDeleteReviewByID, reviewID)
 	if err != nil {
-		if err == storage.ErrNoRows {
+		if errors.Is(err, storage.ErrNoRows) {
 			return nil
 		}
 
@@ -151,7 +152,7 @@ func (manager *ManagerDB) GetReviewByID(id int) (*storage.Review, error) {
 	err := row.Scan(&review.WorkTitle, &review.Genres, review.WorkType, &review.Review, &review.Rating)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
+			return nil, nil
 		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)

@@ -28,7 +28,7 @@ func CreateCookie(w *http.ResponseWriter, token string) {
 	http.SetCookie(*w, cookie)
 }
 
-func DeleteCookie(r *http.Request, w *http.ResponseWriter) {
+func DeleteCookie(w *http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("jwt_token")
 	if err != nil {
 		return
