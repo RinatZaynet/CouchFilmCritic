@@ -34,7 +34,7 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if unique {
+	if !unique {
 		// переписать на алерт
 		logger.Warn("this nickname is already taken", slog.String("nickname", nickName))
 
@@ -51,7 +51,7 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if unique {
+	if !unique {
 		// переписать на алерт
 		logger.Warn("this email is already taken", slog.String("nickname", nickName))
 

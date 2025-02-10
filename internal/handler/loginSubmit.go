@@ -48,7 +48,7 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	if unique {
 		// переписать на алерт
-		logger.Warn("this nickname is already taken", slog.String("nickname", nickName))
+		logger.Warn("there is no user with such nickname", slog.String("nickname", nickName))
 
 		return
 	}
