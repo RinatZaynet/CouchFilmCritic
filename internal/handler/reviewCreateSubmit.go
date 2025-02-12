@@ -40,7 +40,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 		if errors.Is(err, auth.ErrTokenExpired) {
 			logger.Warn("jwt-token expired. redirecting to login page")
 
-			sesscookie.DeleteCookie(&w, r)
+			sesscookie.DeleteCookie(w, r)
 
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 
@@ -88,7 +88,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 		r.FormValue("work_type"),
 		r.FormValue("review"),
 		rating,
-		user.ID,
+		user.NickName,
 	)
 
 	if err != nil {

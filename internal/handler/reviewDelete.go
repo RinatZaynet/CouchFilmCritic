@@ -40,7 +40,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, auth.ErrTokenExpired) {
 			logger.Warn("jwt-token expired. redirecting to login page")
 
-			sesscookie.DeleteCookie(&w, r)
+			sesscookie.DeleteCookie(w, r)
 
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 

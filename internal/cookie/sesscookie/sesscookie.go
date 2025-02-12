@@ -17,7 +17,7 @@ func CheckCookie(r *http.Request) (token string, err error) {
 	return cookie.Value, nil
 }
 
-func CreateCookie(w *http.ResponseWriter, token string) {
+func CreateCookie(w http.ResponseWriter, token string) {
 	cookie := &http.Cookie{
 		Name:    "jwt_token",
 		Value:   token,
@@ -25,10 +25,10 @@ func CreateCookie(w *http.ResponseWriter, token string) {
 		Expires: time.Now().Add(240 * time.Hour),
 	}
 
-	http.SetCookie(*w, cookie)
+	http.SetCookie(w, cookie)
 }
 
-func DeleteCookie(w *http.ResponseWriter, r *http.Request) {
+func DeleteCookie(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("jwt_token")
 	if err != nil {
 		return
@@ -38,5 +38,6 @@ func DeleteCookie(w *http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 		MaxAge: -1,
 	}
-	http.SetCookie(*w, cookie)
+
+	http.SetCookie(w, cookie)
 }

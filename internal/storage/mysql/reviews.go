@@ -9,53 +9,53 @@ import (
 )
 
 var (
-	sqlInsertReview = `INSERT INTO reviews (work_title, genres, work_type, review, rating, create_date, author_user_id)
+	sqlInsertReview = `INSERT INTO reviews (work_title, genres, work_type, review, rating, create_date, author)
 	VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)`
 
 	sqlGetLatestReviews = `SELECT 
-    r.id AS review_id,
-    r.work_title,
-    r.genres,
-    r.work_type,
-    r.review,
-    r.rating,
-    r.create_date,
-    u.nick_name
-	FROM reviews r
-	JOIN users u ON r.author_user_id = u.id 
-	ORDER BY r.create_date DESC LIMIT 10;`
+    id,
+    work_title,
+    genres,
+    work_type,
+    review,
+    rating,
+    create_date,
+    author
+	FROM reviews
+	ORDER BY create_date DESC LIMIT 10;`
 
 	sqlGetReviewsByAuthor = `SELECT 
-    r.id AS review_id,
-    r.work_title,
-    r.genres,
-    r.work_type,
-    r.review,
-    r.rating,
-    r.create_date,
-    u.nick_name 
-	FROM reviews r 
-	JOIN users u ON r.author_user_id = u.id 
-	WHERE u.nick_name = ? 
-	ORDER BY r.create_date DESC;`
+    id,
+    work_title,
+    genres,
+    work_type,
+    review,
+    rating,
+    create_date,
+    author 
+	FROM reviews 
+	WHERE author = ? 
+	ORDER BY create_date DESC;`
 
 	sqlDeleteReviewByID = `DELETE
 	FROM reviews
 	WHERE id = ?;`
 
 	sqlGetReviewByID = `SELECT
-	work_title,
-	genres,
-	work_type,
-	review,
-	rating
+	id,
+    work_title,
+    genres,
+    work_type,
+    review,
+    rating,
+    author
 	FROM reviews
 	WHERE id = ?;`
 )
 
-func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review string, rating int, authorUserID int) (reviewID int, err error) {
+func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review string, rating int, author string) (reviewID int, err error) {
 	const fn = "storage.mysql.managerDB.InsertReview"
-	result, err := manager.Database.Exec(sqlInsertReview, workTitle, genres, workType, review, rating, authorUserID)
+	result, err := manager.Database.Exec(sqlInsertReview, workTitle, genres, workType, review, rating, author)
 	if err != nil {
 		// if err == duplicate ...
 		return 0, fmt.Errorf("%s: %w", fn, err)
@@ -128,10 +128,10 @@ func (manager *ManagerDB) GetReviewsByAuthor(author string) ([]*storage.Review, 
 	return reviews, nil
 }
 
-func (manager *ManagerDB) DeleteReviewByID(reviewID int) error {
+func (manager *ManagerDB) DeleteReviewByID(id int) error {
 	const fn = "storage.mysql.managerDB.DeleteReviewByID"
 
-	_, err := manager.Database.Exec(sqlDeleteReviewByID, reviewID)
+	_, err := manager.Database.Exec(sqlDeleteReviewByID, id)
 	if err != nil {
 		if errors.Is(err, storage.ErrNoRows) {
 			return nil
@@ -149,7 +149,7 @@ func (manager *ManagerDB) GetReviewByID(id int) (*storage.Review, error) {
 	row := manager.Database.QueryRow(sqlGetReviewByID, id)
 
 	review := &storage.Review{}
-	err := row.Scan(&review.WorkTitle, &review.Genres, review.WorkType, &review.Review, &review.Rating)
+	err := row.Scan(&review.ID, &review.WorkTitle, &review.Genres, &review.WorkType, &review.Review, &review.Rating, &review.Author)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

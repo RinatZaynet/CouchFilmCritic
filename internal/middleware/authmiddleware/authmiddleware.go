@@ -8,9 +8,11 @@ import (
 )
 
 var noAuth = map[string]struct{}{
-	"/":      {},
-	"/reg":   {},
-	"/login": {},
+	"/":             {},
+	"/reg":          {},
+	"/login":        {},
+	"/login/submit": {},
+	"/logout":       {},
 }
 
 func AuthMid(h http.Handler) http.Handler {
@@ -27,6 +29,7 @@ func AuthMid(h http.Handler) http.Handler {
 		if tParts := strings.Split(token, "."); len(tParts) != 3 {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
+
 		h.ServeHTTP(w, r)
 	})
 }

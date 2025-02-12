@@ -35,5 +35,9 @@ func Routing(dep *Dependencies) *http.ServeMux {
 
 	authMux := http.NewServeMux()
 	authMux.Handle("/", authmiddleware.AuthMid(mux))
+
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	authMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	return authMux
 }

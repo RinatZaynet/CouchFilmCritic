@@ -4,18 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создание рецензии</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        body {
+            color: #f8f9fa;
+            display: flex;
+            justify-content: center; /* Центрирование по горизонтали */
+            align-items: center; /* Центрирование по вертикали */
+            height: 70vh; /* Высота вьюпорта для вертикального центрирования */
+            margin: 0; /* Убираем отступы по умолчанию */
+            background-color: #333333; /* Фон для контраста */
+        }
+    </style>
 </head>
 <body>
-    <form action="/review/create/submit" method="post">
-        <fieldset>
-            <legend>Создание рецензии</legend>
-            <input name="work_title" type="text" placeholder="Название фильма" required>
-            <input name="genres" type="text" placeholder="Жанр, пример: хоррор/триллер/боевик" required>
-            <input name="work_type" type="text" placeholder="Тип, пример: Фильм, Сериал, Аниме, Мультфильм" required>
-            <input name="review" type="text" placeholder="Отзыв" required>
-            <input name="rating" type="text" placeholder="Оценка, от 1 до 10" required>
-            <input type="submit" placeholder="Создать рецензию">
-        </fieldset>
+    <form action="/review/create/submit" method="POST">
+        <legend>Создание рецензии</legend>
+        <input name="work_title" type="text" placeholder="Название фильма" required>
+        <input name="genres" type="text" placeholder="Жанр, пример: хоррор/триллер/боевик" required>
+        <input name="work_type" type="text" placeholder="Тип, пример: Фильм, Сериал, Аниме, Мультфильм" required>
+        <input name="review" type="text" placeholder="Отзыв" required>
+        <input name="rating" type="text" placeholder="Оценка, от 1 до 10" required>
+        <input type="submit" value="Создать рецензию">
     </form>
 </body>
 </html>

@@ -90,7 +90,7 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sesscookie.CreateCookie(&w, token)
+	sesscookie.CreateCookie(w, token)
 
 	logger.Info("successful login user", slog.String("nickname", nickName))
 

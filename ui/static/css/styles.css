@@ -1,0 +1,114 @@
+/* Общие стили для тела */
+body {
+    background-color: #333333; /* Темный фон */
+    color: #f8f9fa; /* Светлый текст */
+    font-family: 'Arial', sans-serif; /* Шрифт */
+}
+
+/* Стили для заголовков */
+h1 {
+    color: #ffffff; /* Цвет заголовка */
+    margin-bottom: 20px; /* Отступ снизу */
+}
+
+/* Стили для таблицы */
+.table {
+    background-color: #666666; /* Темный фон для таблицы */
+    border-radius: 0.5rem; /* Закругленные углы */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Тень для таблицы */
+    overflow: hidden; /* Убирает лишние углы у дочерних элементов */
+    border-collapse: collapse; /* Убирает промежутки между ячейками */
+}
+
+.table th {
+    background-color: #666666; /* Цвет фона заголовков таблицы */
+    color: #ffffff; /* Белый текст для заголовков */
+    padding: 10px; /* Отступ для заголовков */
+    border-top-left-radius: 0.5rem; /* Закругление верхнего левого угла */
+    border-top-right-radius: 0.5rem; /* Закругление верхнего правого угла */
+    border: none; /* Убирает границы у заголовков */
+}
+
+.table td {
+    border-color: #4f5457; /* Цвет границы ячеек */
+    color: #ffffff; /* Светлый текст для ячеек */
+    padding: 10px; /* Отступ для ячеек */
+    border: none; /* Убирает границы у ячеек */
+}
+
+/* Стили для кнопок */
+.btn-secondary {
+    background-color: #868686; /* Цвет фона для кнопки Регистрация */
+    border-color: #868686; /* Цвет границы для кнопки Регистрация */
+}
+
+.btn-secondary:hover {
+    background-color: #868686; /* Цвет фона при наведении */
+}
+
+/* Стили для кнопок авторизации */
+#auth-buttons {
+    margin-bottom: 20px; /* Отступ снизу для кнопок авторизации */
+}
+
+#auth-buttons .btn {
+    margin-right: 10px; /* Установите нужный отступ справа */
+}
+
+#auth-buttons .btn:last-child {
+    margin-right: 0; /* Убираем отступ у последней кнопки */
+}
+
+/* Стили для таблицы отзывов */
+.table th, .table td {
+    text-align: center; /* Центрирование текста в ячейках */
+}
+
+/* Стили для полей ввода и кнопки */
+input[type="text"],
+input[type="password"],
+input[type="submit"] {
+    width: 100%; /* Занимает полную ширину */
+    padding: 10px; /* Отступы внутри полей */
+    margin-bottom: 10px; /* Отступ между полями */
+    border: 1px solid #868686; /* Цвет границы */
+    border-radius: 0.25rem; /* Закругленные углы для полей */
+    background-color: #666666; /* Темный фон для полей */
+    color: #f8f9fa; /* Светлый текст */
+}
+
+input[type="submit"] {
+    background-color: #868686; /* Цвет фона для кнопки отправки */
+    border: none; /* Убираем границу */
+    cursor: pointer; /* Указатель при наведении */
+}
+
+input[type="submit"]:hover {
+    background-color: #7a7a7a; /* Цвет фона при наведении */
+}
+
+/* Стили для формы */
+form {
+    background-color: #444444; /* Темный фон для формы */
+    padding: 20px; /* Отступы внутри формы */
+    border-radius: 0.5rem; /* Закругленные углы формы */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Тень для формы */
+    display: flex; /* Используем flexbox для расположения элементов */
+    flex-direction: column; /* Вертикальное расположение элементов */
+    width: 300px; /* Ширина формы */
+}
+
+/* Стили для адаптивности */
+@media (max-width: 768px) {
+    .table {
+        width: 100%; /* Ширина таблицы на мобильных устройствах */
+    }
+    #auth-buttons {
+        flex-direction: column; /* Вертикальное расположение кнопок на мобильных */
+        align-items: flex-start; /* Выравнивание по левому краю */
+    }
+    .btn {
+        width: 100%; /* Кнопки занимают полную ширину на мобильных */
+        margin-bottom: 10px; /* Отступ между кнопками */
+    }
+}

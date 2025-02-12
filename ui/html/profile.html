@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
 <body>
     <div class="d-flex justify-content-end mb-3" id="auth-buttons">
-        <a href="/review/create" id="create-btn" class="btn btn-primary mr-2">Написать рецензию</a>
-        <a href="/" id="index-btn" class="btn btn-primary mr-2">Главная страница</a>
-        <a href="/logout" id="logout-btn" class="btn btn-secondary">Выйти из профиля</a>
+        <a href="/review/create" id="create-btn" class="btn btn-secondary">Написать рецензию</a>
+        <a href="/" id="index-btn" class="btn btn-secondary">Главная страница</a>
+        <a href="#" id="logout-btn" class="btn btn-secondary" onclick="logout()">Выйти из профиля</a>
     </div>
 
-    <div class="container mt-5">
+    <div class="container">
         <h1 class="mb-4">Ваши рецензии:</h1>
-        <table class="table table-bordered">
+        <table class="table" style="width: 1300px;">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -42,8 +43,8 @@
                     <td>{{.FormatCreateDate }}</td>
                     <td>{{.Author }}</td>
                     <td>
-                        <button class="btn btn-warning do-edit" data-id="{{.ID }}">Изменить</button>
-                        <button class="btn btn-danger do-delete" data-id="{{.ID }}">Удалить</button>
+                        <button class="btn btn-secondary" data-id="{{.ID }}">Изменить</button>
+                        <button class="btn btn-secondary do-delete" data-id="{{.ID }}">Удалить</button>
                     </td>
                 </tr>
                 {{end}}
@@ -70,7 +71,7 @@
     });
 
     $('.do-delete').click(function() {
-        if (!confirm("Вы уверены, что хотите удалить?")) {
+        if (!confirm("Вы уверены, что хотите удалить рецензию?")) {
             return;
         }
         var $elem = $(this);
@@ -89,6 +90,21 @@
         });
     });
 });
+
+function logout() {
+    fetch('/logout', {
+        method: 'POST',
+        credentials: 'same-origin', // Если необходимо отправить куки
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '/'; // Перенаправление после успешного выхода
+        } else {
+            console.error('Ошибка при выходе из профиля');
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
+}
     </script>
 </body>
 </html>
