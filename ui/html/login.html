@@ -16,12 +16,38 @@
             margin: 0; /* Убираем отступы по умолчанию */
             background-color: #333333; /* Фон для контраста */
         }
+        .warning {
+            color: rgb(218, 58, 18); /* Цвет предупреждения */
+            display: none; /* Скрываем предупреждение по умолчанию */
+        }
     </style>
+    <script>
+        function checkNicknameFormat() {
+            const nicknameInput = document.querySelector('input[name="nickname"]');
+            const warningText = document.getElementById('nickname-warning');
+            const nicknamePattern = /^[a-zA-Z0-9]{5,15}$/; // Регулярное выражение для проверки никнейма
+
+            if (nicknameInput.value.length < 5) {
+                warningText.style.display = 'block'; // Показываем предупреждение
+                warningText.textContent = 'Никнейм должен содержать минимум 5 символов';
+            } else if (nicknameInput.value.length > 15) {
+                warningText.style.display = 'block'; // Показываем предупреждение
+                warningText.textContent = 'Слишком длинный никнейм';
+                nicknameInput.value = nicknameInput.value.slice(0, 15); // Ограничиваем длину до 15 символов
+            } else if (!nicknamePattern.test(nicknameInput.value)) {
+                warningText.style.display = 'block'; // Показываем предупреждение
+                warningText.textContent = 'Никнейм может содержать только латинские буквы и цифры';
+            } else {
+                warningText.style.display = 'none'; // Скрываем предупреждение, если все условия выполнены
+            }
+        }
+    </script>
 </head>
 <body>
     <form action="/login/submit" method="post">
         <legend>Вход</legend>
-        <input name="nickname" type="text" placeholder="Никнейм" required>
+        <input name="nickname" type="text" placeholder="Никнейм" required oninput="checkNicknameFormat()">
+        <div id="nickname-warning" class="warning"></div> <!-- Блок для предупреждения -->
         <input name="password" type="password" placeholder="Пароль" required>
         <input type="submit" value="Войти">
     </form>

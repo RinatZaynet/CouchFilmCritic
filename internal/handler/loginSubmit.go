@@ -28,7 +28,8 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := sesscookie.CheckCookie(r); err == nil {
-		logger.Warn("login submit attempt with existing session cookie. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("login submit attempt with existing session cookie. redirecting to index page",
+			slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
