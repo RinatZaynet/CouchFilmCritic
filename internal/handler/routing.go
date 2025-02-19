@@ -7,7 +7,8 @@ import (
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword/argon2"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/middleware/authmiddleware"
+	mwAuth "github.com/RinatZaynet/CouchFilmCritic/internal/middleware/auth"
+	mwLogger "github.com/RinatZaynet/CouchFilmCritic/internal/middleware/logger"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
 
@@ -34,10 +35,17 @@ func Routing(dep *Dependencies) *http.ServeMux {
 	mux.HandleFunc("/review/delete/", dep.reviewDelete)
 
 	authMux := http.NewServeMux()
-	authMux.Handle("/", authmiddleware.AuthMid(mux))
+
+	newMWAuth := mwAuth.New(dep.Slogger)
+	authMux.Handle("/", newMWAuth(mux))
+
+	loggerMux := http.NewServeMux()
+
+	newMWLogger := mwLogger.New(dep.Slogger)
+	loggerMux.Handle("/", newMWLogger(authMux))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	authMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	loggerMux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return authMux
+	return loggerMux
 }

@@ -19,7 +19,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodDelete {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -28,7 +28,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	token, err := sesscookie.CheckCookie(r)
 	if err != nil {
-		logger.Warn("no session cookie. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("no session cookie", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -38,7 +38,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 	sub, err := dep.JWT.CheckJWT(token)
 	if err != nil {
 		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Warn("jwt-token expired. redirecting to login page")
+			logger.Info("jwt-token expired")
 
 			sesscookie.DeleteCookie(w, r)
 
@@ -47,14 +47,14 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		logger.Error("failed to check jwt-token. redirecting to logout page", errslog.Err(err))
+		logger.Error("failed to check jwt-token", errslog.Err(err))
 
 		http.Redirect(w, r, "/logout", http.StatusSeeOther)
 
 		return
 	}
 
-	user, err := dep.DB.GetUserByNickName(sub)
+	user, err := dep.DB.GetUserByNickname(sub)
 	if err != nil {
 		logger.Error("failed to get user by nickname",
 			slog.String("nickname", sub),
@@ -68,7 +68,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Query().Get("id")
 	if id == "" {
-		logger.Warn("the variable id was not found in the request. redirecting to profile page",
+		logger.Warn("the variable id was not found in the request",
 			slog.String("nickname", sub),
 		)
 
@@ -79,8 +79,8 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	reviewID, err := strconv.Atoi(id)
 	if err != nil {
-		logger.Error("failed to conv string to int. redirecting to profile page",
-			slog.String("nickname", user.NickName),
+		logger.Error("failed to conv string to int",
+			slog.String("nickname", user.Nickname),
 			slog.String("val", id),
 			errslog.Err(err),
 		)
@@ -103,8 +103,8 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if review.Author != user.NickName {
-		logger.Warn("attempt to delete a review by a user who did not write it. redirecting to profile page",
+	if review.Author != user.Nickname {
+		logger.Warn("attempt to delete a review by a user who did not write it",
 			slog.String("nickname", sub),
 			slog.Int("reviewID", reviewID),
 		)
@@ -116,7 +116,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	if err := dep.DB.DeleteReviewByID(reviewID); err != nil {
 		logger.Error("failed to delete review by id",
-			slog.String("nickname", user.NickName),
+			slog.String("nickname", user.Nickname),
 			slog.String("id", id),
 			errslog.Err(err),
 		)
@@ -127,11 +127,11 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info("successful delete review",
-		slog.String("nickname", user.NickName),
+		slog.String("nickname", user.Nickname),
 		slog.Int("reviewID", reviewID),
 	)
 
-	logger.Info("successful of the handler work, redirecting to profile page")
+	logger.Info("successful of the handler work")
 
 	http.Redirect(w, r, "/profile", http.StatusSeeOther)
 }

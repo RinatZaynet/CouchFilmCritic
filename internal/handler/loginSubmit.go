@@ -10,6 +10,7 @@ import (
 	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	hashpass "github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/validation"
 )
 
 func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodPost {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -28,17 +29,24 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := sesscookie.CheckCookie(r); err == nil {
-		logger.Warn("login submit attempt with existing session cookie. redirecting to index page",
-			slog.String("method", r.Method))
+		logger.Warn("login submit attempt with existing session cookie")
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	nickName := r.FormValue("nickname")
+	nickname := r.FormValue("nickname")
 
-	unique, err := dep.DB.IsNickNameUnique(nickName)
+	if !validation.IsValidNickname(nickname) {
+		dep.Slogger.Info("not valid nickname", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+
+		return
+	}
+
+	unique, err := dep.DB.IsUniqueNickname(nickname)
 	if err != nil {
 		logger.Error("failed to check nickname for uniqueness", errslog.Err(err))
 
@@ -49,12 +57,30 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	if unique {
 		// переписать на алерт
-		logger.Warn("there is no user with such nickname", slog.String("nickname", nickName))
+		logger.Info("there is no user with such nickname", slog.String("nickname", nickname))
 
 		return
 	}
 
-	user, err := dep.DB.GetUserByNickName(nickName)
+	if !validation.IsValidNickname(nickname) {
+		dep.Slogger.Info("not valid nickname", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+
+		return
+	}
+
+	pass := r.FormValue("password")
+
+	if !validation.IsValidPassword(pass) {
+		dep.Slogger.Info("not valid password", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+
+		return
+	}
+
+	user, err := dep.DB.GetUserByNickname(nickname)
 	if err != nil {
 		logger.Error("failed to get user by nickname", errslog.Err(err))
 
@@ -63,10 +89,10 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := dep.A2.CompareHashAndPassword([]byte(r.FormValue("password")), user.PasswordHash); err != nil {
+	if err := dep.A2.CompareHashAndPassword([]byte(pass), user.PasswordHash); err != nil {
 		if errors.Is(err, hashpass.ErrMismatchesTypes) {
 			// переписать на алерт
-			logger.Warn("wrong password", slog.String("nickname", nickName))
+			logger.Info("wrong password", slog.String("nickname", nickname))
 
 			return
 		}
@@ -78,7 +104,7 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	claims := &auth.Claims{
-		Sub: nickName,
+		Sub: nickname,
 		Exp: time.Now().Add(240 * time.Hour).Unix(),
 	}
 
@@ -93,9 +119,9 @@ func (dep *Dependencies) loginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	sesscookie.CreateCookie(w, token)
 
-	logger.Info("successful login user", slog.String("nickname", nickName))
+	logger.Info("successful login user", slog.String("nickname", nickname))
 
-	logger.Info("successful of the handler work, redirecting to index page")
+	logger.Info("successful of the handler work")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

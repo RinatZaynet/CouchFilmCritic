@@ -16,17 +16,124 @@
             margin: 0; /* Убираем отступы по умолчанию */
             background-color: #333333; /* Фон для контраста */
         }
+        .warning {
+            color: rgb(218, 58, 18); /* Цвет предупреждения */
+            display: none; /* Скрываем предупреждение по умолчанию */
+        }
+        .checkbox-container {
+            max-height: 200px; /* Максимальная высота контейнера */
+            overflow-y: auto; /* Включаем вертикальную прокрутку */
+            margin-bottom: 10px; /* Отступ внизу */
+            border: 1px solid #868686; /* Цвет границы контейнера */
+            border-radius: 0.25rem; /* Закругленные углы для контейнера */
+            background-color: #444444; /* Темный фон для контейнера */
+            padding: 10px; /* Отступы внутри контейнера */
+        }
     </style>
+    <script>
+        function checkTitleLength() {
+            const titleInput = document.querySelector('input[name="work_title"]');
+            const warningText = document.getElementById('title-length-warning');
+            if (titleInput.value.length < 8) {
+                warningText.style.display = 'block';
+                warningText.textContent = 'Минимальная длина 8 символов';
+                titleInput.value = titleInput.value.slice(0, 8);
+            } else if (titleInput.value.length > 200) {
+                warningText.style.display = 'block';
+                warningText.textContent = 'Максимальная длина 200 символов';
+                titleInput.value = titleInput.value.slice(0, 200);
+            } else {
+                warningText.style.display = 'none';
+            }
+        }
+
+        function checkReviewLength() {
+            const reviewInput = document.querySelector('textarea[name="review"]');
+            const warningText = document.getElementById('review-length-warning');
+            if (reviewInput.value.length > 500) {
+                warningText.style.display = 'block';
+                warningText.textContent = 'Общая длина рецензии не должна превышать 500 символов';
+                reviewInput.value = reviewInput.value.slice(0, 500);
+            } else {
+                warningText.style.display = 'none';
+            }
+        }
+
+        function checkRating() {
+            const ratingInput = document.querySelector('input[name="rating"]');
+            const warningText = document.getElementById('rating-warning');
+            const ratingValue = ratingInput.value;
+
+            // Проверяем, является ли значение целым числом и находится ли оно в диапазоне от 0 до 10
+            if (!/^\d+$/.test(ratingValue) || ratingValue < 0 || ratingValue > 10) {
+                warningText.style.display = 'block';
+                warningText.textContent = 'Оценка должна быть целым числом от 0 до 10';
+            } else {
+                warningText.style.display = 'none';
+            }
+        }
+
+        // Функция для автоматического изменения высоты текстового поля
+        function autoResizeTextarea() {
+            const textarea = document.querySelector('textarea[name="review"]');
+            textarea.style.height = 'auto'; // Сбрасываем высоту
+            textarea.style.height = (textarea.scrollHeight) + 'px'; // Устанавливаем высоту в зависимости от содержимого
+        }
+    </script>
 </head>
 <body>
     <form action="/review/create/submit" method="POST">
         <legend>Создание рецензии</legend>
-        <input name="work_title" type="text" placeholder="Название фильма" required>
-        <input name="genres" type="text" placeholder="Жанр, пример: хоррор/триллер/боевик" required>
-        <input name="work_type" type="text" placeholder="Тип, пример: Фильм, Сериал, Аниме, Мультфильм" required>
-        <input name="review" type="text" placeholder="Отзыв" required>
-        <input name="rating" type="text" placeholder="Оценка, от 1 до 10" required>
-        <input type="submit" value="Создать рецензию">
+        <input name="work_title" type="text" placeholder="Название фильма" required oninput="checkTitleLength()">
+        <div id="title-length-warning" class="warning"></div> <!-- Блок для предупреждения длины названия -->
+
+        <fieldset>
+            <legend>Жанры:</legend>
+            <div class="checkbox-container"> <!-- Контейнер для прокрутки -->
+                <div class="checkbox-list">
+                    <label><input type="checkbox" name="genres" value="биография"> биография</label><br>
+                    <label><input type="checkbox" name="genres" value="боевик"> боевик</label><br>
+                    <label><input type="checkbox" name="genres" value="вестерн"> вестерн</label><br>
+                    <label><input type="checkbox" name="genres" value="военный"> военный</label><br>
+                    <label><input type="checkbox" name="genres" value="детектив"> детектив</label><br>
+                    <label><input type="checkbox" name="genres" value="детский"> детский</label><br>
+                    <label><input type="checkbox" name="genres" value="документальный"> документальный</label><br>
+                    <label><input type="checkbox" name="genres" value="драма"> драма</label><br>
+                    <label><input type="checkbox" name="genres" value="история"> история</label><br>
+                    <label><input type="checkbox" name="genres" value="комедия"> комедия</label><br>
+                    <label><input type="checkbox" name="genres" value="короткометражка"> короткометражка</label><br>
+                    <label><input type="checkbox" name="genres" value="криминал"> криминал</label><br>
+                    <label><input type="checkbox" name="genres" value="мелодрама"> мелодрама</label><br>
+                    <label><input type="checkbox" name="genres" value="музыка"> музыка</label><br>
+                    <label><input type="checkbox" name="genres" value="мюзикл"> мюзикл</label><br>
+                    <label><input type="checkbox" name="genres" value="приключения"> приключения</label><br>
+                    <label><input type="checkbox" name="genres" value="семейный"> семейный</label><br>
+                    <label><input type="checkbox" name="genres" value="спорт"> спорт</label><br>
+                    <label><input type="checkbox" name="genres" value="триллер"> триллер</label><br>
+                    <label><input type="checkbox" name="genres" value="ужасы"> ужасы</label><br>
+                    <label><input type="checkbox" name="genres" value="фантастика"> фантастика</label><br>
+                    <label><input type="checkbox" name="genres" value="фэнтези"> фэнтези</label><br>
+                </div>
+            </div>
+        </fieldset>
+
+        <legend for="work_type">Тип:</legend>
+        <select name="work_type" id="work_type" required>
+            <option value="" disabled selected>Выберите тип</option>
+            <option value="Фильм">Фильм</option>
+            <option value="Сериал">Сериал</option>
+            <option value="Аниме">Аниме</option>
+            <option value="Мультфильм">Мультфильм</option>
+        </select>
+
+        <textarea name="review" placeholder="Ваш отзыв" required oninput="checkReviewLength()" oninput="autoResizeTextarea()"></textarea>
+        <div id="review-length-warning" class="warning"></div> <!-- Блок для предупреждения длины отзыва -->
+
+        <input name="rating" type="text" placeholder="Оценка, от 0 до 10" required oninput="checkRating()" pattern="^[0-9]$|^10$">
+        <div id="rating-warning" class="warning"></div> <!-- Блок для предупреждения оценки -->
+
+        <input type="submit" value="Отправить">
     </form>
 </body>
 </html>
+

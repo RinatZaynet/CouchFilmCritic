@@ -15,7 +15,7 @@ func (dep *Dependencies) logout(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodPost {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -26,7 +26,7 @@ func (dep *Dependencies) logout(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("successful logout user")
 
-	logger.Info("successful of the handler work, redirecting to index page")
+	logger.Info("successful of the handler work")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

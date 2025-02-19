@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 CREATE TABLE IF NOT EXISTS `reviews` (
   `id` int NOT NULL UNIQUE AUTO_INCREMENT,
   `work_title` varchar(109) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `genres` varchar(109) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `work_type` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `genres` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `work_type` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `review` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
   `rating` int COLLATE utf8mb4_unicode_ci NOT NULL,
   `create_date` datetime NOT NULL,

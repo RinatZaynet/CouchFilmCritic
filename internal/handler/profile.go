@@ -21,7 +21,7 @@ func (dep *Dependencies) profile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodGet {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -30,7 +30,7 @@ func (dep *Dependencies) profile(w http.ResponseWriter, r *http.Request) {
 
 	token, err := sesscookie.CheckCookie(r)
 	if err != nil {
-		logger.Warn("no session cookie. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("no session cookie", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -40,7 +40,7 @@ func (dep *Dependencies) profile(w http.ResponseWriter, r *http.Request) {
 	sub, err := dep.JWT.CheckJWT(token)
 	if err != nil {
 		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Warn("jwt-token expired. redirecting to login page")
+			logger.Info("jwt-token expired")
 
 			sesscookie.DeleteCookie(w, r)
 
@@ -49,7 +49,7 @@ func (dep *Dependencies) profile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		logger.Error("failed to check jwt-token. redirecting to logout page", errslog.Err(err))
+		logger.Error("failed to check jwt-token", errslog.Err(err))
 
 		http.Redirect(w, r, "/logout", http.StatusSeeOther)
 

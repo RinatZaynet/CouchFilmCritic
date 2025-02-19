@@ -16,7 +16,7 @@ func (dep *Dependencies) reg(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodGet {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 

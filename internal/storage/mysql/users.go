@@ -11,18 +11,18 @@ import (
 var (
 	sqlInsertUser = `INSERT INTO users (nick_name, email, password_hash, signup_date)
     VALUES(?, ?, ?, UTC_TIMESTAMP())`
-	sqlGetUserByNickName = `SELECT id, nick_name, email, password_hash, signup_date FROM users
+	sqlGetUserByNickname = `SELECT id, nick_name, email, password_hash, signup_date FROM users
 	WHERE nick_name = ?`
-	sqlIsNickNameUnique = `SELECT nick_name FROM users
+	sqlIsUniqueNickname = `SELECT nick_name FROM users
 	WHERE nick_name = ?`
-	sqlIsEmailUnique = `SELECT email FROM users
+	sqlIsUniqueEmail = `SELECT email FROM users
 	WHERE email = ?`
 )
 
-func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (int, error) {
+func (manager *ManagerDB) InsertUser(nickname, email, passwordHash string) (int, error) {
 	const fn = "storage.mysql.managerDB.InsertUser"
 
-	result, err := manager.Database.Exec(sqlInsertUser, nickName, email, passwordHash)
+	result, err := manager.Database.Exec(sqlInsertUser, nickname, email, passwordHash)
 	if err != nil {
 		// if err == duplicate ...
 		return 0, fmt.Errorf("%s: %w", fn, err)
@@ -35,13 +35,13 @@ func (manager *ManagerDB) InsertUser(nickName, email, passwordHash string) (int,
 	return int(id), nil
 }
 
-func (manager *ManagerDB) GetUserByNickName(nickName string) (*storage.User, error) {
-	const fn = "storage.mysql.managerDB.GetUserByNickName"
+func (manager *ManagerDB) GetUserByNickname(nickname string) (*storage.User, error) {
+	const fn = "storage.mysql.managerDB.GetUserByNickname"
 
-	row := manager.Database.QueryRow(sqlGetUserByNickName, nickName)
+	row := manager.Database.QueryRow(sqlGetUserByNickname, nickname)
 
 	user := &storage.User{}
-	err := row.Scan(&user.ID, &user.NickName, &user.Email, &user.PasswordHash, &user.SignUpDate)
+	err := row.Scan(&user.ID, &user.Nickname, &user.Email, &user.PasswordHash, &user.SignUpDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
@@ -53,13 +53,13 @@ func (manager *ManagerDB) GetUserByNickName(nickName string) (*storage.User, err
 	return user, nil
 }
 
-func (manager *ManagerDB) IsNickNameUnique(nickName string) (unique bool, err error) {
-	const fn = "storage.mysql.managerDB.IsNickNameUnique"
+func (manager *ManagerDB) IsUniqueNickname(nickname string) (unique bool, err error) {
+	const fn = "storage.mysql.managerDB.IsUniqueNickname"
 	user := &storage.User{}
 
-	row := manager.Database.QueryRow(sqlIsNickNameUnique, nickName)
+	row := manager.Database.QueryRow(sqlIsUniqueNickname, nickname)
 
-	err = row.Scan(&user.NickName)
+	err = row.Scan(&user.Nickname)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return true, nil
@@ -71,11 +71,11 @@ func (manager *ManagerDB) IsNickNameUnique(nickName string) (unique bool, err er
 	return false, nil
 }
 
-func (manager *ManagerDB) IsEmailUnique(email string) (unique bool, err error) {
-	const fn = "storage.mysql.managerDB.IsEmailUnique"
+func (manager *ManagerDB) IsUniqueEmail(email string) (unique bool, err error) {
+	const fn = "storage.mysql.managerDB.IsUniqueEmail"
 	user := &storage.User{}
 
-	row := manager.Database.QueryRow(sqlIsEmailUnique, email)
+	row := manager.Database.QueryRow(sqlIsUniqueEmail, email)
 
 	err = row.Scan(&user.Email)
 	if err != nil {

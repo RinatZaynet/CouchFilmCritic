@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/validation"
 )
 
 func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
@@ -15,17 +16,24 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodPost {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
-	// TODO: Написать функцию валидатор входящих от пользователя данных и перенести туда весь код ниже
 
-	nickName := r.FormValue("nickname")
+	nickname := r.FormValue("nickname")
 
-	unique, err := dep.DB.IsNickNameUnique(nickName)
+	if !validation.IsValidNickname(nickname) {
+		dep.Slogger.Info("not valid nickname", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/reg", http.StatusSeeOther)
+
+		return
+	}
+
+	unique, err := dep.DB.IsUniqueNickname(nickname)
 	if err != nil {
 		logger.Error("failed to check nickname for uniqueness", errslog.Err(err))
 
@@ -36,13 +44,22 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 
 	if !unique {
 		// переписать на алерт
-		logger.Warn("this nickname is already taken", slog.String("nickname", nickName))
+		logger.Warn("this nickname is already taken", slog.String("nickname", nickname))
 
 		return
 	}
 
 	email := r.FormValue("email")
-	unique, err = dep.DB.IsEmailUnique(email)
+
+	if !validation.IsValidEmail(email) {
+		dep.Slogger.Info("not valid email", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/reg", http.StatusSeeOther)
+
+		return
+	}
+
+	unique, err = dep.DB.IsUniqueEmail(email)
 	if err != nil {
 		logger.Error("failed to check email for uniqueness", errslog.Err(err))
 
@@ -53,28 +70,25 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 
 	if !unique {
 		// переписать на алерт
-		logger.Warn("this email is already taken", slog.String("nickname", nickName))
+		logger.Warn("this email is already taken", slog.String("nickname", nickname))
 
 		return
 	}
 
-	if r.FormValue("password0") != r.FormValue("password1") {
-		// переписать на алерт
-		logger.Warn("mismatch passwords", slog.String("nickname", nickName))
+	pass := r.FormValue("password")
+	passConfirm := r.FormValue("passwordConfirm")
+
+	if !validation.IsValidNewPassword(pass, passConfirm) {
+		dep.Slogger.Info("not valid password", slog.String("nickname", nickname))
+
+		http.Redirect(w, r, "/reg", http.StatusSeeOther)
 
 		return
 	}
 
-	hashedPass, err := dep.A2.HashingPassword([]byte(r.FormValue("password0")))
-	if err != nil {
-		logger.Error("failed to hashing password", errslog.Err(err))
+	hashedPass := dep.A2.HashingPassword([]byte(r.FormValue("password")))
 
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-
-		return
-	}
-
-	_, err = dep.DB.InsertUser(nickName, email, hashedPass)
+	_, err = dep.DB.InsertUser(nickname, email, hashedPass)
 	if err != nil {
 		logger.Error("failed to insert user", errslog.Err(err))
 
@@ -83,9 +97,9 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("successful registration user", slog.String("nickname", nickName))
+	logger.Info("successful registration user", slog.String("nickname", nickname))
 
-	logger.Info("successful of the handler work, redirecting to login page")
+	logger.Info("successful of the handler work")
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

@@ -12,7 +12,7 @@ var (
 
 type User struct {
 	ID           int
-	NickName     string
+	Nickname     string
 	Email        string
 	PasswordHash string
 	SignUpDate   time.Time

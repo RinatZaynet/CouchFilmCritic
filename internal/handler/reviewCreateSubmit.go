@@ -5,10 +5,12 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/validation"
 )
 
 func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +21,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodPost {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -28,7 +30,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	token, err := sesscookie.CheckCookie(r)
 	if err != nil {
-		logger.Warn("no session cookie. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("no session cookie", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -38,7 +40,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 	sub, err := dep.JWT.CheckJWT(token)
 	if err != nil {
 		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Warn("jwt-token expired. redirecting to login page")
+			logger.Info("jwt-token expired")
 
 			sesscookie.DeleteCookie(w, r)
 
@@ -47,14 +49,14 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		logger.Error("failed to check jwt-token. redirecting to logout page", errslog.Err(err))
+		logger.Error("failed to check jwt-token", errslog.Err(err))
 
 		http.Redirect(w, r, "/logout", http.StatusSeeOther)
 
 		return
 	}
 
-	user, err := dep.DB.GetUserByNickName(sub)
+	user, err := dep.DB.GetUserByNickname(sub)
 	if err != nil {
 		logger.Error("failed to get user by nickname",
 			slog.String("nickname", sub),
@@ -66,12 +68,72 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	workTitle := r.FormValue("work_title")
+
+	if !validation.IsValidWorkTitle(workTitle) {
+		dep.Slogger.Info("not valid work title",
+			slog.String("nickname", sub),
+			slog.String("work title", workTitle))
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+		return
+	}
+
+	genres := r.Form["genres"]
+
+	fmtGenres := strings.Join(genres, ", ")
+
+	if !validation.IsValidGenres(genres) {
+		dep.Slogger.Info("not valid genres",
+			slog.String("nickname", sub),
+			slog.String("genres", fmtGenres))
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+		return
+	}
+
+	workType := r.FormValue("work_type")
+
+	if !validation.IsValidWorkType(workType) {
+		dep.Slogger.Info("not valid work type",
+			slog.String("nickname", sub),
+			slog.String("work type", workType))
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+		return
+	}
+
+	review := r.FormValue("review")
+
+	if !validation.IsValidReview(review) {
+		dep.Slogger.Info("not valid review",
+			slog.String("nickname", sub),
+			slog.String("review", review))
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+		return
+	}
+
 	ratingStr := r.FormValue("rating")
+
+	if !validation.IsValidRating(ratingStr) {
+		dep.Slogger.Info("not valid rating",
+			slog.String("nickname", sub),
+			slog.String("rating", ratingStr))
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+		return
+	}
 
 	rating, err := strconv.Atoi(ratingStr)
 	if err != nil {
-		logger.Error("failed to conv string to int. redirecting to profile page",
-			slog.String("nickname", user.NickName),
+		logger.Error("failed to conv string to int",
+			slog.String("nickname", user.Nickname),
 			slog.String("val", ratingStr),
 			errslog.Err(err),
 		)
@@ -81,19 +143,18 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// добавить валидацию с алертами
 	id, err := dep.DB.InsertReview(
-		r.FormValue("work_title"),
-		r.FormValue("genres"),
-		r.FormValue("work_type"),
-		r.FormValue("review"),
+		workTitle,
+		fmtGenres,
+		workType,
+		review,
 		rating,
-		user.NickName,
+		user.Nickname,
 	)
 
 	if err != nil {
 		logger.Error("failed to insert new review",
-			slog.String("nickname", user.NickName),
+			slog.String("nickname", user.Nickname),
 			errslog.Err(err),
 		)
 
@@ -103,11 +164,11 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 	}
 
 	logger.Info("successful create new review",
-		slog.String("nickname", user.NickName),
+		slog.String("nickname", user.Nickname),
 		slog.Int("reviewID", id),
 	)
 
-	logger.Info("successful of the handler work, redirecting to profile page")
+	logger.Info("successful of the handler work")
 
 	http.Redirect(w, r, "/profile", http.StatusSeeOther)
 }

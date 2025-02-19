@@ -98,6 +98,35 @@ form {
     width: 300px; /* Ширина формы */
 }
 
+/* Стили для выбора */
+select {
+    width: 100%; /* Занимает полную ширину */
+    padding: 10px; /* Отступы внутри */
+    margin-bottom: 10px; /* Отступ внизу */
+    border: 1px solid #868686; /* Цвет границы */
+    border-radius: 0.25rem; /* Закругленные углы */
+    background-color: #666666; /* Темный фон */
+    color: #f8f9fa; /* Светлый текст */
+    appearance: none; /* Убираем стандартный стиль браузера */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><polygon points="0,0 10,0 5,5" fill="%23f8f9fa"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center; /* Положение стрелки */
+    background-size: 10px; /* Размер стрелки */
+}
+
+/* Стили для textarea */
+textarea {
+    width: 100%; /* Занимает полную ширину */
+    padding: 10px; /* Отступы внутри текстового поля */
+    margin-bottom: 10px; /* Отступ между полями */
+    border: 1px solid #868686; /* Цвет границы */
+    border-radius: 0.25rem; /* Закругленные углы для текстового поля */
+    background-color: #666666; /* Темный фон для текстового поля */
+    color: #f8f9fa; /* Светлый текст */
+    resize: none; /* Запретить изменение размера вручную */
+    overflow: hidden; /* Скрыть полосу прокрутки */
+}
+
 /* Стили для адаптивности */
 @media (max-width: 768px) {
     .table {

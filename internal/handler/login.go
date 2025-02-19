@@ -17,7 +17,7 @@ func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 	logger.Info("start of the handler work")
 
 	if r.Method != http.MethodGet {
-		logger.Warn("unsupported method. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("unsupported method", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -25,7 +25,7 @@ func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := sesscookie.CheckCookie(r); err == nil {
-		logger.Warn("login attempt with existing session cookie. redirecting to index page", slog.String("method", r.Method))
+		logger.Warn("login attempt with existing session cookie", slog.String("method", r.Method))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
