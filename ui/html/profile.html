@@ -43,7 +43,7 @@
                     <td>{{.FormatCreateDate }}</td>
                     <td>{{.Author }}</td>
                     <td>
-                        <button class="btn btn-secondary" data-id="{{.ID }}">Изменить</button>
+                        <button class="btn btn-secondary do-edit" data-id="{{.ID }}">Изменить</button>
                         <button class="btn btn-secondary do-delete" data-id="{{.ID }}">Удалить</button>
                     </td>
                 </tr>
@@ -54,57 +54,48 @@
 
     <script>
         $(document).ready(function() {
-    $('.do-edit').click(function() {
-        if (!confirm("Вы уверены, что хотите изменить рецензию?")) {
-            return;
-        }
-        var $elem = $(this);
-        var reviewId = $elem.data("id"); // Получаем ID рецензии
-        $.ajax({
-            url: '/review/update/?id=' + reviewId,
-            type: 'GET',
-            error: function(err) {
-                console.error("Ошибка:", err);
-                alert("Произошла ошибка при изменении рецензии.");
+            $('.do-edit').click(function() {
+            if (!confirm("Вы уверены, что хотите изменить рецензию?")) {
+                return; // Если пользователь отменяет, выходим из функции
             }
+            var reviewId = $(this).data("id"); // Получаем ID рецензии
+            window.location.href = '/review/update/?id=' + reviewId;
+        });
+
+        $('.do-delete').click(function() {
+            if (!confirm("Вы уверены, что хотите удалить рецензию?")) {
+                return; // Если пользователь отменяет, выходим из функции
+            }
+            var reviewId = $(this).data("id"); // Получаем ID рецензии
+            $.ajax({
+                url: '/review/delete/?id=' + reviewId,
+                type: 'DELETE', // Указываем метод DELETE
+                success: function(response) {
+                    // Можно обновить страницу или удалить элемент из DOM
+                    location.reload(); // Перезагружаем страницу
+                },
+                error: function(err) {
+                    console.error("Ошибка:", err);
+                    alert("Произошла ошибка при удалении рецензии.");
+                }
+            });
         });
     });
 
-    $('.do-delete').click(function() {
-        if (!confirm("Вы уверены, что хотите удалить рецензию?")) {
-            return;
+        function logout() {
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'same-origin', // Если необходимо отправить куки
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Перенаправление после успешного выхода
+                } else {
+                    console.error('Ошибка при выходе из профиля');
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
         }
-        var $elem = $(this);
-        var reviewId = $elem.data("id"); // Получаем ID рецензии
-
-        $.ajax({
-            url: '/review/delete/?id=' + reviewId,
-            type: 'DELETE',
-            success: function(resp) {
-                window.location.href = '/profile';
-            },
-            error: function(err) {
-                console.error("Ошибка:", err);
-                alert("Произошла ошибка при удалении рецензии.");
-            }
-        });
-    });
-});
-
-function logout() {
-    fetch('/logout', {
-        method: 'POST',
-        credentials: 'same-origin', // Если необходимо отправить куки
-    })
-    .then(response => {
-        if (response.ok) {
-            window.location.href = '/'; // Перенаправление после успешного выхода
-        } else {
-            console.error('Ошибка при выходе из профиля');
-        }
-    })
-    .catch(error => console.error('Ошибка:', error));
-}
     </script>
 </body>
 </html>

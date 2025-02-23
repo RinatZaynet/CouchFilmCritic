@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/config"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/handler"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword/argon2"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/handlers"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/hashpass/argon2"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/jwtutill"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
 
@@ -35,19 +35,19 @@ func Run() {
 	}
 	defer db.Close()
 
-	managerJWT, err := jwt.NewManagerJWT(cfg.JWTSecret)
+	managerJWT, err := jwtutill.NewManager(cfg.JWTSecret)
 	if err != nil {
 		log.Error("failed to init jwt", errslog.Err(err))
 		os.Exit(1)
 	}
 
-	managerArgon2 := argon2.NewManagerArgon2(&argon2.Options{
+	managerArgon2 := argon2.NewManager(&argon2.Options{
 		Time:    cfg.Time,
 		Memory:  cfg.Memory,
 		Threads: cfg.Threads,
 	})
 
-	dep := &handler.Dependencies{
+	dep := &handlers.Dependencies{
 		Templates: tmpl,
 		DB:        &mysql.ManagerDB{Database: db},
 		JWT:       managerJWT,
@@ -55,7 +55,7 @@ func Run() {
 		Slogger:   log,
 	}
 
-	mux := handler.Routing(dep)
+	mux := dep.Routing()
 
 	server := &http.Server{
 		Addr:         cfg.Address,
@@ -64,6 +64,7 @@ func Run() {
 		WriteTimeout: cfg.Timeout,
 		IdleTimeout:  cfg.IdleTimeout,
 	}
+
 	// доделать
 	log.Info("server start", slog.String("addr", cfg.Address))
 	err = server.ListenAndServe()

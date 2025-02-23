@@ -27,6 +27,7 @@ func (manager *ManagerDB) InsertUser(nickname, email, passwordHash string) (int,
 		// if err == duplicate ...
 		return 0, fmt.Errorf("%s: %w", fn, err)
 	}
+
 	id, err := result.LastInsertId()
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", fn, err)
@@ -41,9 +42,16 @@ func (manager *ManagerDB) GetUserByNickname(nickname string) (*storage.User, err
 	row := manager.Database.QueryRow(sqlGetUserByNickname, nickname)
 
 	user := &storage.User{}
-	err := row.Scan(&user.ID, &user.Nickname, &user.Email, &user.PasswordHash, &user.SignUpDate)
+
+	err := row.Scan(&user.ID,
+		&user.Nickname,
+		&user.Email,
+		&user.PasswordHash,
+		&user.SignUpDate,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+
 			return nil, fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
 		}
 
@@ -55,6 +63,7 @@ func (manager *ManagerDB) GetUserByNickname(nickname string) (*storage.User, err
 
 func (manager *ManagerDB) IsUniqueNickname(nickname string) (unique bool, err error) {
 	const fn = "storage.mysql.managerDB.IsUniqueNickname"
+
 	user := &storage.User{}
 
 	row := manager.Database.QueryRow(sqlIsUniqueNickname, nickname)
@@ -62,6 +71,7 @@ func (manager *ManagerDB) IsUniqueNickname(nickname string) (unique bool, err er
 	err = row.Scan(&user.Nickname)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+
 			return true, nil
 		}
 
@@ -73,6 +83,7 @@ func (manager *ManagerDB) IsUniqueNickname(nickname string) (unique bool, err er
 
 func (manager *ManagerDB) IsUniqueEmail(email string) (unique bool, err error) {
 	const fn = "storage.mysql.managerDB.IsUniqueEmail"
+
 	user := &storage.User{}
 
 	row := manager.Database.QueryRow(sqlIsUniqueEmail, email)
@@ -80,6 +91,7 @@ func (manager *ManagerDB) IsUniqueEmail(email string) (unique bool, err error) {
 	err = row.Scan(&user.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+
 			return true, nil
 		}
 

@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"log/slog"
@@ -21,6 +21,22 @@ func (dep *Dependencies) regSubmit(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
+	}
+
+	sub, err := dep.checkAuth(w, r)
+
+	if err != nil {
+		logger.Error("failed to check auth", errslog.Err(err))
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+
+		return
+	}
+
+	if sub != "" {
+		nickname := sub
+
+		logger.Warn("registration submit attempt with existing session cookie", slog.String("nickname", nickname))
 	}
 
 	nickname := r.FormValue("nickname")

@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"errors"
@@ -7,10 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/validation"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/storage"
 )
 
 func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Request) {
@@ -28,38 +27,40 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	token, err := sesscookie.CheckCookie(r)
+	sub, err := dep.checkAuth(w, r)
+
 	if err != nil {
-		logger.Warn("no session cookie", slog.String("method", r.Method))
+		logger.Error("failed to check auth", errslog.Err(err))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	sub, err := dep.JWT.CheckJWT(token)
-	if err != nil {
-		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Info("jwt-token expired")
+	if sub == "" {
+		logger.Info("no session cookie")
 
-			sesscookie.DeleteCookie(w, r)
-
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-
-			return
-		}
-
-		logger.Error("failed to check jwt-token", errslog.Err(err))
-
-		http.Redirect(w, r, "/logout", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	user, err := dep.DB.GetUserByNickname(sub)
+	nickname := sub
+
+	user, err := dep.DB.GetUserByNickname(nickname)
 	if err != nil {
+		if errors.Is(err, storage.ErrNoRows) {
+			logger.Warn("no user with this nickname",
+				slog.String("nickname", nickname),
+			)
+
+			http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+			return
+		}
+
 		logger.Error("failed to get user by nickname",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			errslog.Err(err),
 		)
 
@@ -72,7 +73,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	if !validation.IsValidWorkTitle(workTitle) {
 		dep.Slogger.Info("not valid work title",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.String("work title", workTitle))
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
@@ -86,7 +87,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	if !validation.IsValidGenres(genres) {
 		dep.Slogger.Info("not valid genres",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.String("genres", fmtGenres))
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
@@ -98,7 +99,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	if !validation.IsValidWorkType(workType) {
 		dep.Slogger.Info("not valid work type",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.String("work type", workType))
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
@@ -110,7 +111,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	if !validation.IsValidReview(review) {
 		dep.Slogger.Info("not valid review",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.String("review", review))
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
@@ -122,7 +123,7 @@ func (dep *Dependencies) reviewCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 	if !validation.IsValidRating(ratingStr) {
 		dep.Slogger.Info("not valid rating",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.String("rating", ratingStr))
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)

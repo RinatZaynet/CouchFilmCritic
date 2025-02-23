@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	hashpass "github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/hashpass"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/random"
 	a2 "golang.org/x/crypto/argon2"
 )
@@ -21,21 +21,21 @@ type Options struct {
 	Threads uint8
 }
 
-type ManagerArgon2 struct {
+type Manager struct {
 	Opt *Options
 }
 
-func NewManagerArgon2(opt *Options) *ManagerArgon2 {
-	return &ManagerArgon2{opt}
+func NewManager(opt *Options) *Manager {
+	return &Manager{opt}
 }
 
-func (man *ManagerArgon2) HashingPassword(password []byte) (formatHash string) {
+func (m *Manager) HashingPassword(password []byte) (formatHash string) {
 	salt := random.RandomSliceByte(defaultSaltLen)
 
-	hash := a2.IDKey(password, salt, man.Opt.Time, man.Opt.Memory, man.Opt.Threads, defaultKeyLen)
+	hash := a2.IDKey(password, salt, m.Opt.Time, m.Opt.Memory, m.Opt.Threads, defaultKeyLen)
 
 	formatHast := fmt.Sprintf("$argon2id$v=%d$t=%d,m=%d,p=%d$%s$%s",
-		a2.Version, man.Opt.Time, man.Opt.Memory, man.Opt.Threads,
+		a2.Version, m.Opt.Time, m.Opt.Memory, m.Opt.Threads,
 		base64.RawStdEncoding.EncodeToString(salt),
 		base64.RawStdEncoding.EncodeToString(hash),
 	)
@@ -43,8 +43,8 @@ func (man *ManagerArgon2) HashingPassword(password []byte) (formatHash string) {
 	return formatHast
 }
 
-func (mng *ManagerArgon2) CompareHashAndPassword(password []byte, formatHash string) error {
-	const fn = "argon2.ManagerArgon2.CompareHashAndPassword"
+func (m *Manager) CompareHashAndPassword(password []byte, formatHash string) error {
+	const fn = "argon2.Manager.CompareHashAndPassword"
 
 	p, err := parse(formatHash)
 	if err != nil {

@@ -1,10 +1,9 @@
-package handler
+package handlers
 
 import (
 	"log/slog"
 	"net/http"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 )
 
@@ -24,12 +23,20 @@ func (dep *Dependencies) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := sesscookie.CheckCookie(r); err == nil {
-		logger.Warn("login attempt with existing session cookie", slog.String("method", r.Method))
+	sub, err := dep.checkAuth(w, r)
+
+	if err != nil {
+		logger.Error("failed to check auth", errslog.Err(err))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
+	}
+
+	if sub != "" {
+		nickname := sub
+
+		logger.Warn("login attempt with existing session cookie", slog.String("nickname", nickname))
 	}
 
 	if err := dep.Templates.ExecuteTemplate(w, tmplLogin, nil); err != nil {

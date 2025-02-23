@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"errors"
@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/storage"
 )
 
 func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
@@ -26,38 +25,40 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := sesscookie.CheckCookie(r)
+	sub, err := dep.checkAuth(w, r)
+
 	if err != nil {
-		logger.Warn("no session cookie", slog.String("method", r.Method))
+		logger.Error("failed to check auth", errslog.Err(err))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	sub, err := dep.JWT.CheckJWT(token)
-	if err != nil {
-		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Info("jwt-token expired")
+	if sub == "" {
+		logger.Info("no session cookie")
 
-			sesscookie.DeleteCookie(w, r)
-
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-
-			return
-		}
-
-		logger.Error("failed to check jwt-token", errslog.Err(err))
-
-		http.Redirect(w, r, "/logout", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	user, err := dep.DB.GetUserByNickname(sub)
+	nickname := sub
+
+	user, err := dep.DB.GetUserByNickname(nickname)
 	if err != nil {
+		if errors.Is(err, storage.ErrNoRows) {
+			logger.Warn("no user with this nickname",
+				slog.String("nickname", nickname),
+			)
+
+			http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+			return
+		}
+
 		logger.Error("failed to get user by nickname",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			errslog.Err(err),
 		)
 
@@ -69,7 +70,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		logger.Warn("the variable id was not found in the request",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 		)
 
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
@@ -92,9 +93,20 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	review, err := dep.DB.GetReviewByID(reviewID)
 	if err != nil {
+		if errors.Is(err, storage.ErrNoRows) {
+			logger.Warn("no review with this id",
+				slog.String("nickname", nickname),
+				slog.Int("reviewID", reviewID),
+			)
+
+			http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+			return
+		}
+
 		logger.Error("failed to get review by id",
 			slog.Int("reviewID", reviewID),
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			errslog.Err(err),
 		)
 
@@ -105,7 +117,7 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 
 	if review.Author != user.Nickname {
 		logger.Warn("attempt to delete a review by a user who did not write it",
-			slog.String("nickname", sub),
+			slog.String("nickname", nickname),
 			slog.Int("reviewID", reviewID),
 		)
 
@@ -115,6 +127,17 @@ func (dep *Dependencies) reviewDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := dep.DB.DeleteReviewByID(reviewID); err != nil {
+		if errors.Is(err, storage.ErrNoRows) {
+			logger.Warn("no review with this id",
+				slog.String("nickname", nickname),
+				slog.Int("reviewID", reviewID),
+			)
+
+			http.Redirect(w, r, "/profile", http.StatusSeeOther)
+
+			return
+		}
+
 		logger.Error("failed to delete review by id",
 			slog.String("nickname", user.Nickname),
 			slog.String("id", id),

@@ -1,26 +1,26 @@
-package handler
+package handlers
 
 import (
 	"html/template"
 	"log/slog"
 	"net/http"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth/jwt"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/hashingPassword/argon2"
-	mwAuth "github.com/RinatZaynet/CouchFilmCritic/internal/middleware/auth"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/hashpass/argon2"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/jwtutill"
 	mwLogger "github.com/RinatZaynet/CouchFilmCritic/internal/middleware/logger"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/middleware/requestid"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage/mysql"
 )
 
 type Dependencies struct {
 	Templates *template.Template
 	DB        *mysql.ManagerDB
-	JWT       *jwt.ManagerJWT
-	A2        *argon2.ManagerArgon2
+	JWT       *jwtutill.Manager
+	A2        *argon2.Manager
 	Slogger   *slog.Logger
 }
 
-func Routing(dep *Dependencies) *http.ServeMux {
+func (dep *Dependencies) Routing() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", dep.index)
 	mux.HandleFunc("/login", dep.login)
@@ -34,18 +34,16 @@ func Routing(dep *Dependencies) *http.ServeMux {
 	mux.HandleFunc("/review/update/", dep.reviewUpdate)
 	mux.HandleFunc("/review/delete/", dep.reviewDelete)
 
-	authMux := http.NewServeMux()
-
-	newMWAuth := mwAuth.New(dep.Slogger)
-	authMux.Handle("/", newMWAuth(mux))
-
 	loggerMux := http.NewServeMux()
+	mwL := mwLogger.New(dep.Slogger)
+	loggerMux.Handle("/", mwL(mux))
 
-	newMWLogger := mwLogger.New(dep.Slogger)
-	loggerMux.Handle("/", newMWLogger(authMux))
+	reqIDMux := http.NewServeMux()
+	mwR := requestid.New(dep.Slogger, dep.JWT)
+	reqIDMux.Handle("/", mwR(loggerMux))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	loggerMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return loggerMux
+	return reqIDMux
 }

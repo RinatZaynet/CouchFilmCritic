@@ -1,39 +1,50 @@
-package jwt
+package jwtutill
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
 	"github.com/golang-jwt/jwt"
 )
 
-type ManagerJWT struct {
+var (
+	ErrTokenExpired  = errors.New("token is expired")
+	ErrInvalidToken  = errors.New("token is invalid")
+	ErrTokenNotFound = errors.New("token not found")
+)
+
+type Claims struct {
+	Sub string
+	Exp int64
+}
+
+type Manager struct {
 	privateKey []byte
 }
 
-func (manager *ManagerJWT) GenJWT(claims *auth.Claims) (tokenJWT string, err error) {
-	const fn = "auth.jwt.GenJWT"
+func (manager *Manager) GenJWT(claims *Claims) (token string, err error) {
+	const fn = "jwt.GenJWT"
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	tokenJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": claims.Sub,
 		"exp": claims.Exp,
 	})
 
-	tokenJWT, err = token.SignedString(manager.privateKey)
+	token, err = tokenJWT.SignedString(manager.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", fn, err)
 	}
 
-	return tokenJWT, nil
+	return token, nil
 }
 
-func (manager *ManagerJWT) CheckJWT(token string) (sub string, err error) {
-	const fn = "auth.jwt.CheckJWT"
+func (manager *Manager) Parse(token string) (sub string, err error) {
+	const fn = "jwt.CheckJWT"
 	sub = ""
 
 	if token == "" {
-		return sub, auth.ErrTokenNotFound
+		return sub, ErrTokenNotFound
 	}
 
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
@@ -45,7 +56,7 @@ func (manager *ManagerJWT) CheckJWT(token string) (sub string, err error) {
 	})
 	if err != nil {
 		if err.Error() == "Token is expired" {
-			return sub, fmt.Errorf("%s: %w", fn, auth.ErrTokenExpired)
+			return sub, fmt.Errorf("%s: %w", fn, ErrTokenExpired)
 		}
 		return sub, fmt.Errorf("%s: %w", fn, err)
 	}
@@ -55,14 +66,14 @@ func (manager *ManagerJWT) CheckJWT(token string) (sub string, err error) {
 			return sub, nil
 		}
 
-		return sub, auth.ErrInvalidToken
+		return sub, ErrInvalidToken
 	}
 
-	return sub, auth.ErrInvalidToken
+	return sub, ErrInvalidToken
 }
 
-func NewManagerJWT(keyPath string) (*ManagerJWT, error) {
-	const fn = "auth.jwt.NewManagerJWT"
+func NewManager(keyPath string) (*Manager, error) {
+	const fn = "jwt.NewManager"
 
 	if keyPath == "" {
 		return nil, fmt.Errorf("%s: %w", fn, fmt.Errorf("jwt key length cannot be 0"))
@@ -73,5 +84,5 @@ func NewManagerJWT(keyPath string) (*ManagerJWT, error) {
 		return nil, fmt.Errorf("%s: %w", fn, fmt.Errorf("invalid jwt key"))
 	}
 
-	return &ManagerJWT{privateKey: key}, nil
+	return &Manager{privateKey: key}, nil
 }

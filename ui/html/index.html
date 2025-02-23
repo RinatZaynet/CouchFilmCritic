@@ -53,8 +53,8 @@
         }
 
         $(document).ready(function() {
-            const token = getCookie("jwt_token");
-            console.log("Кука jwt_token:", token); // Отладочное сообщение
+            const token = getCookie("auth_token");
+            console.log("Кука auth_token:", token); // Отладочное сообщение
 
             if (token) {
                 console.log("Кука найдена. Показываем кнопку Профиль и скрываем Вход и Регистрацию."); // Отладочное сообщение

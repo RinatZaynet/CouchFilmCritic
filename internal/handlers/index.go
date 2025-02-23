@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"log/slog"
@@ -10,7 +10,7 @@ import (
 )
 
 func (dep *Dependencies) index(w http.ResponseWriter, r *http.Request) {
-	const fn = "handler.index"
+	const fn = "handlers.dependencies.index"
 	const tmplIndex = "index.html"
 
 	logger := dep.Slogger.With(slog.String("func", fn))

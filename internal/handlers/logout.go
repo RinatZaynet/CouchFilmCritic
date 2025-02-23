@@ -1,10 +1,10 @@
-package handler
+package handlers
 
 import (
 	"log/slog"
 	"net/http"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
+	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/auth"
 )
 
 func (dep *Dependencies) logout(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (dep *Dependencies) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sesscookie.DeleteCookie(w, r)
+	auth.DeleteAuthCookie(w, r)
 
 	logger.Info("successful logout user")
 

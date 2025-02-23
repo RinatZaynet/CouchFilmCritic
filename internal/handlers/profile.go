@@ -1,12 +1,9 @@
-package handler
+package handlers
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
-	"github.com/RinatZaynet/CouchFilmCritic/internal/auth"
-	"github.com/RinatZaynet/CouchFilmCritic/internal/cookie/sesscookie"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/errslog"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/helpers/timefmt"
 	"github.com/RinatZaynet/CouchFilmCritic/internal/storage"
@@ -28,42 +25,36 @@ func (dep *Dependencies) profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := sesscookie.CheckCookie(r)
+	sub, err := dep.checkAuth(w, r)
+
 	if err != nil {
-		logger.Warn("no session cookie", slog.String("method", r.Method))
+		logger.Error("failed to check auth", errslog.Err(err))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	sub, err := dep.JWT.CheckJWT(token)
-	if err != nil {
-		if errors.Is(err, auth.ErrTokenExpired) {
-			logger.Info("jwt-token expired")
+	if sub == "" {
+		logger.Info("no session cookie")
 
-			sesscookie.DeleteCookie(w, r)
-
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-
-			return
-		}
-
-		logger.Error("failed to check jwt-token", errslog.Err(err))
-
-		http.Redirect(w, r, "/logout", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
 
-	reviews, err := dep.DB.GetReviewsByAuthor(sub)
+	nickname := sub
+
+	reviews, err := dep.DB.GetReviewsByAuthor(nickname)
+
 	if err != nil {
-		logger.Error("failed to get reviews", slog.String("nickname", sub), errslog.Err(err))
+		logger.Error("failed to get reviews", slog.String("nickname", nickname), errslog.Err(err))
 
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
 		return
 	}
+
 	// локация должна соответствовать локации пользователя
 	if err := timefmt.TimeReviewsFmt(reviews, "Europe/Moscow"); err != nil {
 		logger.Error("failed to format time", errslog.Err(err))

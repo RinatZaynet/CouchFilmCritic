@@ -18,9 +18,10 @@ func parseTemplates(templatePath string) (*template.Template, error) {
 	if _, err := os.Stat(templatePath); err != nil {
 		return nil, errInvalidTemplatePath
 	}
-	tmpl, err := template.ParseGlob(templatePath + "*")
+	tmpl, err := template.ParseGlob(templatePath + "*.html")
 	if err != nil {
 		return nil, err
 	}
+
 	return tmpl, nil
 }

@@ -55,14 +55,25 @@ var (
 
 func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review string, rating int, author string) (reviewID int, err error) {
 	const fn = "storage.mysql.managerDB.InsertReview"
-	result, err := manager.Database.Exec(sqlInsertReview, workTitle, genres, workType, review, rating, author)
+
+	result, err := manager.Database.Exec(sqlInsertReview,
+		workTitle,
+		genres,
+		workType,
+		review,
+		rating,
+		author,
+	)
+
 	if err != nil {
-		// if err == duplicate ...
+
 		return 0, fmt.Errorf("%s: %w", fn, err)
 	}
 
 	id, err := result.LastInsertId()
+
 	if err != nil {
+
 		return 0, fmt.Errorf("%s: %w", fn, err)
 	}
 
@@ -71,28 +82,40 @@ func (manager *ManagerDB) InsertReview(workTitle, genres, workType, review strin
 
 func (manager *ManagerDB) GetLatestReviews() ([]*storage.Review, error) {
 	const fn = "storage.mysql.managerDB.GetLatestReviews"
+
 	rows, err := manager.Database.Query(sqlGetLatestReviews)
+
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)
 	}
+
 	reviews := make([]*storage.Review, 0, 10)
+
 	defer rows.Close()
 
 	for rows.Next() {
 		s := &storage.Review{}
 
-		err := rows.Scan(&s.ID, &s.WorkTitle, &s.Genres, &s.WorkType, &s.Review, &s.Rating, &s.CreateDate, &s.Author)
+		err := rows.Scan(&s.ID,
+			&s.WorkTitle,
+			&s.Genres,
+			&s.WorkType,
+			&s.Review,
+			&s.Rating,
+			&s.CreateDate,
+			&s.Author,
+		)
 		if err != nil {
+
 			return nil, fmt.Errorf("%s: failed to scan: %w", fn, err)
 		}
+
 		reviews = append(reviews, s)
 	}
 
 	if err = rows.Err(); err != nil {
+
 		return nil, fmt.Errorf("%s: %w", fn, err)
 	}
 
@@ -101,27 +124,39 @@ func (manager *ManagerDB) GetLatestReviews() ([]*storage.Review, error) {
 
 func (manager *ManagerDB) GetReviewsByAuthor(author string) ([]*storage.Review, error) {
 	const fn = "storage.mysql.managerDB.GetReviewsByAuthor"
+
 	rows, err := manager.Database.Query(sqlGetReviewsByAuthor, author)
+
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)
 	}
+
 	reviews := make([]*storage.Review, 0, 20)
+
 	defer rows.Close()
 
 	for rows.Next() {
 		s := &storage.Review{}
 
-		err := rows.Scan(&s.ID, &s.WorkTitle, &s.Genres, &s.WorkType, &s.Review, &s.Rating, &s.CreateDate, &s.Author)
+		err := rows.Scan(&s.ID,
+			&s.WorkTitle,
+			&s.Genres,
+			&s.WorkType,
+			&s.Review, &s.Rating,
+			&s.CreateDate,
+			&s.Author,
+		)
+
 		if err != nil {
+
 			return nil, fmt.Errorf("%s: failed to scan: %w", fn, err)
 		}
+
 		reviews = append(reviews, s)
 	}
 	if err = rows.Err(); err != nil {
+
 		return nil, fmt.Errorf("%s: %w", fn, err)
 	}
 
@@ -132,9 +167,11 @@ func (manager *ManagerDB) DeleteReviewByID(id int) error {
 	const fn = "storage.mysql.managerDB.DeleteReviewByID"
 
 	_, err := manager.Database.Exec(sqlDeleteReviewByID, id)
+
 	if err != nil {
-		if errors.Is(err, storage.ErrNoRows) {
-			return nil
+		if errors.Is(err, sql.ErrNoRows) {
+
+			return fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
 		}
 
 		return fmt.Errorf("%s: %w", fn, err)
@@ -149,10 +186,20 @@ func (manager *ManagerDB) GetReviewByID(id int) (*storage.Review, error) {
 	row := manager.Database.QueryRow(sqlGetReviewByID, id)
 
 	review := &storage.Review{}
-	err := row.Scan(&review.ID, &review.WorkTitle, &review.Genres, &review.WorkType, &review.Review, &review.Rating, &review.Author)
+
+	err := row.Scan(&review.ID,
+		&review.WorkTitle,
+		&review.Genres,
+		&review.WorkType,
+		&review.Review,
+		&review.Rating,
+		&review.Author,
+	)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+
+			return nil, fmt.Errorf("%s: %w", fn, storage.ErrNoRows)
 		}
 
 		return nil, fmt.Errorf("%s: %w", fn, err)
